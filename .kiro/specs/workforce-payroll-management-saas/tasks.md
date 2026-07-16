@@ -1,0 +1,462 @@
+# Implementation Plan
+
+This task plan implements the approved design and the derived requirements without selecting still-open languages, frameworks, cloud services, vendors, statutory formulas, commercial policies, or numeric service targets. Each task must retain Tenant isolation, version/digest binding, permission checks, idempotency, optimistic concurrency, immutable history, auditability, and safe failure behavior. Post-final correction, off-cycle payroll, and revised Payslip workflows remain out of scope.
+
+- [ ] 1. Establish implementation decision gates and traceability
+  - [ ] 1.1 Create an implementation decision register for technology, deployment, Tenant isolation tier, identity, storage, queue, notification, signing, reporting, PWA distribution, browser/device support, accessibility, localization, retention, and service objectives.
+    - Mark each item Confirmed, Approved Implementation Choice, Tenant Configuration, or Blocking Prerequisite.
+    - Preserve technology-neutral contracts until each choice is approved.
+    - _Requirements: 3.10–3.11, 22.4–22.9, 28.12–28.13, 29.15, 33.11–33.13, 37.11, 38.1–38.2, 42.1–42.10_
+  - [ ] 1.2 Obtain and record qualified Singapore PTE, MOM, contract, payroll, legal, privacy, and compliance validation for production payroll policy.
+    - Do not encode unverified statutory rates, thresholds, eligibility, standard days/hours, rounding, or legal interpretations.
+    - _Requirements: 22.1–22.9_
+  - [ ] 1.3 Define the approved Permission catalog, default Role templates, custom-role constraints, risk tiers, Maker_Checker_Policy, Segregation_of_Duties rules, step-up actions, and Break_Glass_Session governance.
+    - Keep salary view, salary edit, salary approval, payroll finalization, export, and support access as separate Permissions.
+    - _Requirements: 2.5–2.7, 4.1–4.13, 6.1–6.11, 35.1–35.2_
+  - [ ] 1.4 Create a requirements-to-design-to-task traceability matrix and update it as implementation and tests progress.
+    - _Requirements: 42.11, 43.1–43.14_
+
+- [ ] 2. Build the Tenant-scoped application foundation
+  - [ ] 2.1 Implement authenticated Principal context and server-derived effective Tenant context for human and Integration_Principals.
+    - Reject caller-supplied Tenant substitution and avoid cross-Tenant existence disclosure.
+    - _Requirements: 1.1–1.6_
+  - [ ] 2.2 Implement Tenant-scoped identifiers and repository/storage contracts for transactional records, cache entries, object keys, search documents, messages, idempotency records, exports, and Integration_Events.
+    - _Requirements: 1.2–1.6_
+  - [ ] 2.3 Implement the shared command envelope with Principal, Tenant, Permission, Resource_Scope, correlation identifier, Idempotency_Key, Expected_Version, and request digest.
+    - _Requirements: 1.7–1.10, 7.1–7.10_
+  - [ ] 2.4 Implement stable API errors with safe messages, correlation identifiers, conflict summaries, and no cross-Tenant detail leakage.
+    - _Requirements: 7.5–7.10_
+  - [ ] 2.5 Implement canonical serialization and digest utilities for submitted content, approvals, consent, acknowledgement, calculations, exports, and snapshots.
+    - Ensure deterministic field ordering and fixed representations.
+    - _Requirements: 6.5–6.6, 7.8–7.9, 13.3, 14.2, 18.2, 19.3, 23.13, 25.10–25.14_
+  - [ ] 2.6 Implement fixed-precision money, currency, duration, time-zone, effective-interval, and versioned-reference primitives.
+    - Preserve Site IANA time zone and resolved offset for date/time evidence.
+    - _Requirements: 5.2, 17.12–17.13, 21.5–21.11, 23.9–23.13_
+
+- [ ] 3. Implement authorization, Roles, and segregation of duties
+  - [ ] 3.1 Implement versioned Role templates, custom Roles, Permission grants, Resource_Scopes, and effective Permission calculation.
+    - _Requirements: 6.1–6.3, 6.8–6.11_
+  - [ ] 3.2 Implement layered command authorization across platform boundary, Tenant lifecycle, Tenant RBAC, Resource_Scope, workflow state, risk policy, and support context.
+    - Preserve mandatory deny precedence.
+    - _Requirements: 1.7–1.10, 2.3–2.9_
+  - [ ] 3.3 Implement Maker_Checker_Policy and Segregation_of_Duties evaluation for calendar, overtime, sensitive Role assignments, compensation, adjustments, payroll readiness, finalization, exports, and break-glass.
+    - Bind approval to exact submitted digest and policy version.
+    - _Requirements: 6.3–6.8, 8.3–8.7, 12.2–12.5, 21.2–21.5, 25.5–25.9_
+  - [ ] 3.4 Implement revocation propagation for Accounts, Roles, Permissions, Resource_Scopes, sessions, devices, and Tenant status.
+    - _Requirements: 6.9–6.11, 31.3–31.10_
+  - [ ] 3.5 Add authorization contract tests proving surface-independent server decisions and entitlement/feature-flag non-authority.
+    - _Requirements: 1.9–1.10, 2.8–2.9_
+
+- [ ] 4. Implement Platform Control Plane and Tenant lifecycle
+  - [ ] 4.1 Implement the separate Platform_Admin_Console shell and Control_Plane API boundary.
+    - Exclude implicit Tenant_Data_Plane identity and protected payroll payloads.
+    - _Requirements: 2.1–2.4, 2.7–2.9_
+  - [ ] 4.2 Implement Tenant request, resumable provisioning steps, onboarding progress, activation gates, data placement, and idempotent retry convergence.
+    - _Requirements: 3.1–3.4_
+  - [ ] 4.3 Implement versioned Tenant lifecycle transitions with Expected_Version, reason, audit, and command-sensitive Restricted/Suspended behavior.
+    - _Requirements: 3.5–3.9_
+  - [ ] 4.4 Implement the proposed entitlement, quota, and feature-release contracts behind configuration flags only after commercial approval.
+    - Ensure these controls gate availability but never grant domain Permissions.
+    - _Requirements: 2.8–2.9, 3.10–3.11_
+  - [ ] 4.5 Add provisioning resume, duplicate request, failed step, suspension, reactivation, and isolation tests.
+    - _Requirements: 3.1–3.11, 43.6–43.10_
+
+- [ ] 5. Implement governed support access
+  - [ ] 5.1 Implement Support_Case, support-access request, Tenant approval, Support_Grant, Support_Session, revocation, and expiration models.
+    - _Requirements: 4.1–4.8_
+  - [ ] 5.2 Implement support-session derivation of effective Tenant and intersection of approved scope with the agent’s support Permissions.
+    - Preserve Tenant domain authorization, masking, Maker_Checker_Policy, and immutable-domain rules.
+    - _Requirements: 4.3–4.9_
+  - [ ] 5.3 Implement visible support-context indicators and Tenant security notifications.
+    - _Requirements: 4.4, 4.6_
+  - [ ] 5.4 Implement separately governed Break_Glass_Session approval, alerting, time limit, automatic expiry, and post-use review.
+    - _Requirements: 4.10–4.13_
+  - [ ] 5.5 Add tests for absent, wrong-Tenant, excess-scope, expired, revoked, forged, masked-data, immutable-snapshot, and dual-attribution cases.
+    - _Requirements: 4.1–4.13, 43.9–43.10_
+
+- [ ] 6. Implement Tenant administration and workforce master data
+  - [ ] 6.1 Build the responsive Tenant_Management_Admin_Panel shell with permission-composed navigation and no implicit salary/finalizer access.
+    - _Requirements: 2.2, 2.5–2.7, 32.1–32.14_
+  - [ ] 6.2 Implement versioned Organization_Unit, Site, IANA time zone, Checkpoint, Account, Worker_Profile, Employment_Record, and Work_Assignment aggregates.
+    - _Requirements: 5.1–5.8_
+  - [ ] 6.3 Implement protected employment-identifier storage, field masking, and separately permissioned full view.
+    - _Requirements: 5.5–5.6, 35.5_
+  - [ ] 6.4 Implement effective-dated assignment resolution by Worker, Site, team, Supervisor, date, and scope.
+    - Reject cross-Tenant, missing, and ambiguous assignments.
+    - _Requirements: 5.8–5.12_
+  - [ ] 6.5 Add version-history, overlap, scope, masking, concurrency, and authorization tests for workforce administration.
+    - _Requirements: 5.1–5.12, 7.1–7.10_
+
+- [ ] 7. Implement the monthly Operating Calendar hard gate
+  - [ ] 7.1 Implement monthly calendar drafts that contain every valid date and exactly one Working or Closed classification per date and scope.
+    - _Requirements: 8.1–8.2_
+  - [ ] 7.2 Implement submit, reject-with-reason, checker publish, immutable Published_Object, supersession, and historical resolution states.
+    - _Requirements: 8.3–8.7, 8.10–8.12_
+  - [ ] 7.3 Implement calendar replacement impact analysis across meetings, overtime, Work_Records, review, and payroll dependencies.
+    - _Requirements: 8.8–8.9_
+  - [ ] 7.4 Implement a reusable Closed-day guard for ordinary meeting, attendance, Work_Record, and overtime commands.
+    - _Requirements: 9.1–9.4_
+  - [ ] 7.5 Preserve Closed classification and the “Closed — Authorized OT Work” label for valid exceptions.
+    - _Requirements: 9.5–9.8_
+  - [ ] 7.6 Add state-machine and property tests for publication, supersession, Closed-day prohibition, impact conflicts, and classification preservation.
+    - _Requirements: 8.1–8.12, 9.1–9.8, 43.2–43.6_
+
+- [ ] 8. Implement Toolbox Meetings and dual attendance
+  - [ ] 8.1 Implement Supervisor-created ordinary Toolbox_Meetings with Working-day guard, Site, time, assignment scope, and versioned roster snapshot.
+    - _Requirements: 10.1–10.4_
+  - [ ] 8.2 Implement authorized Closed-day special meeting creation constrained to the applicable Closed_Day_OT authorization.
+    - _Requirements: 10.5–10.6_
+  - [ ] 8.3 Implement meeting activation, completion, versioning, and attendance eligibility from the captured roster snapshot.
+    - _Requirements: 10.7–10.9_
+  - [ ] 8.4 Implement Supervisor arrival confirmation and Worker arrival confirmation bound to the same Worker, meeting, version, actor, and timestamp.
+    - _Requirements: 11.1–11.2_
+  - [ ] 8.5 Implement idempotent creation of exactly one ordinary draft Work_Record after valid Dual_Attendance_Confirmation.
+    - _Requirements: 11.3–11.4_
+  - [ ] 8.6 Implement Attendance_Exception states for missing, mismatched, late, and absent confirmations with reasoned resolution.
+    - _Requirements: 11.5–11.10_
+  - [ ] 8.7 Add generated retry, mismatch, roster, Closed-day, assignment, and concurrent-confirmation tests.
+    - _Requirements: 10.1–10.9, 11.1–11.10, 43.4–43.8_
+
+- [ ] 9. Implement Working-day and Closed-day overtime planning
+  - [ ] 9.1 Implement Overtime_Plan creation with named Workers, Supervisors, date, planned times, Site/location scope, category, and purpose.
+    - _Requirements: 12.1, 13.1_
+  - [ ] 9.2 Implement overlap, assignment, calendar, authorization-scope, Expected_Version, digest, and Maker_Checker_Policy validation.
+    - _Requirements: 12.2–12.5, 13.2–13.3_
+  - [ ] 9.3 Implement separate bounded Overtime_Assignments per named Worker and preserve Working_Day_OT versus Closed_Day_OT classification.
+    - _Requirements: 12.4–12.10, 13.3–13.10_
+  - [ ] 9.4 Implement Closed-day Worker, Supervisor, date, time, Site, and location guards without changing the Calendar_Day.
+    - _Requirements: 13.4–13.10_
+  - [ ] 9.5 Implement planned-versus-actual comparison and prevent threshold-only inference of overtime authorization.
+    - _Requirements: 12.6–12.10_
+  - [ ] 9.6 Add state-machine and property tests for proposal, approval, rejection, supersession, scope mismatch, overlap, and calendar preservation.
+    - _Requirements: 12.1–12.10, 13.1–13.10, 43.2–43.6_
+
+- [ ] 10. Implement date-specific Worker pre-work consent
+  - [ ] 10.1 Build the Worker consent view with exact Worker, date, time, location, category, terms, deadline, state, and authorization digest.
+    - _Requirements: 14.1_
+  - [ ] 10.2 Implement consent, decline, expiry, and immutable signature evidence bound to the authenticated Worker and exact Overtime_Assignment digest.
+    - _Requirements: 14.2–14.7_
+  - [ ] 10.3 Reject late or synthetically backdated consent and require new consent after authorization changes.
+    - _Requirements: 14.3–14.7_
+  - [ ] 10.4 Implement configurable Staggered_Rest_Day_Acknowledgement subtype and label without inferring legal meaning.
+    - _Requirements: 14.8–14.9, 22.7–22.9_
+  - [ ] 10.5 Implement Pending offline consent only for approved policies, with complete server revalidation before acceptance.
+    - _Requirements: 14.10, 29.1–29.15_
+  - [ ] 10.6 Add boundary tests for exact start time, changed digest, wrong Worker, decline, expiry, retry, and offline reconciliation.
+    - _Requirements: 14.1–14.10, 43.4–43.8_
+
+- [ ] 11. Implement replay-resistant checkout evidence
+  - [ ] 11.1 Implement Checkpoint signing-key lifecycle and short-lived QR_Challenge issuance bound to Tenant, Site, Checkpoint, purpose, issue/expiry time, nonce, and key reference.
+    - _Requirements: 15.1, 15.11, 35.3–35.4_
+  - [ ] 11.2 Implement checkout submission binding to authenticated Worker, open Work_Record, session, Site, Checkpoint, and required device/location evidence.
+    - _Requirements: 15.2–15.4_
+  - [ ] 11.3 Implement atomic one-time nonce consumption and attach accepted minimized Checkout_Evidence to only the correct Work_Record.
+    - _Requirements: 15.5–15.9_
+  - [ ] 11.4 Reject invalid signature, wrong purpose, expiry, replay, scope substitution, static reusable codes, and mismatched records without setting an end time.
+    - _Requirements: 15.6–15.8, 15.13_
+  - [ ] 11.5 Route location failure to explicit exception review and produce non-conclusive security signals for risk patterns.
+    - _Requirements: 15.10–15.12_
+  - [ ] 11.6 Add property and concurrency tests proving one nonce causes at most one accepted end-time mutation.
+    - _Requirements: 15.1–15.13, 43.2–43.10_
+
+- [ ] 12. Implement attendance, checkout, and work-evidence exceptions
+  - [ ] 12.1 Implement no-phone, camera-denied, offline, missed-checkout, wrong-location, reassignment, emergency-work, late, and absence exception types.
+    - _Requirements: 16.1–16.6, 30.4–30.8_
+  - [ ] 12.2 Implement exception request fields for requester, reason code, controlled text, evidence references, and requested effect.
+    - _Requirements: 16.7_
+  - [ ] 12.3 Implement scoped approval/rejection with before/after effect, payroll impact, audit, and new source version when required.
+    - _Requirements: 16.8–16.10_
+  - [ ] 12.4 Ensure exception paths do not fabricate consent, ordinary authorization, checkout acceptance, or evidence completeness.
+    - _Requirements: 16.3–16.6, 30.10–30.11_
+  - [ ] 12.5 Add authorization, evidence, stale-review, and payroll-impact integration tests for every exception type.
+    - _Requirements: 16.1–16.10_
+
+- [ ] 13. Implement Work Record versioning and Supervisor verification
+  - [ ] 13.1 Implement the Work_Record aggregate with date, Site, Calendar_Day, authorization, time segments, break, classification, source, remark, evidence, status, version, digest, and supersession.
+    - _Requirements: 17.1–17.3, 20.3–20.9_
+  - [ ] 13.2 Implement Work_Record validation for positive duration, non-negative break/payable time, non-overlap, approved concurrent-assignment exceptions, and authorized OT scope.
+    - _Requirements: 17.12–17.13, 23.7–23.12_
+  - [ ] 13.3 Build the Supervisor review view with current sources, evidence, authorization, consent, versions, and status.
+    - _Requirements: 17.2, 32.1–32.14_
+  - [ ] 13.4 Implement unchanged verification bound to the exact Work_Record_Digest.
+    - _Requirements: 17.3, 17.9_
+  - [ ] 13.5 Implement reason-coded time, break, classification, and remark edits with before/after values and new versions.
+    - _Requirements: 17.4–17.8_
+  - [ ] 13.6 Preserve historical acknowledgement/review evidence and invalidate current acknowledgement/review after authorized source correction.
+    - _Requirements: 17.10–17.11, 18.10–18.11, 24.4–24.8_
+  - [ ] 13.7 Add state-machine tests for valid transitions, invalid transitions, concurrent edits, supersession, and scope denial.
+    - _Requirements: 17.1–17.13, 43.6–43.8_
+
+- [ ] 14. Implement Worker acknowledgement, dispute, and safe batch confirmation
+  - [ ] 14.1 Build single-record Worker review with exact version, digest, date, start/end, breaks, classifications, remark, and authorized evidence summary.
+    - _Requirements: 18.1_
+  - [ ] 14.2 Implement single Worker_Acknowledgement bound to owner, current version, digest, signer, and timestamp.
+    - Reject wrong owner, stale digest, and ineligible state.
+    - _Requirements: 18.2–18.5_
+  - [ ] 14.3 Implement date-specific Dispute creation, reason, routing, blocker behavior, resolution, supersession, and re-acknowledgement.
+    - _Requirements: 18.6–18.11_
+  - [ ] 14.4 Build batch candidate selection with explicit per-date checkbox, version/digest indicator, eligibility, and exclusion reason.
+    - _Requirements: 19.1–19.3, 19.10–19.12_
+  - [ ] 14.5 Implement Batch_Envelope signing and atomic per-item revalidation of owner, state, current version/digest, unresolved Dispute, and blocker.
+    - _Requirements: 19.3–19.7_
+  - [ ] 14.6 Create exactly one independently traceable Worker_Acknowledgement per accepted item and return partitioned accepted/excluded results.
+    - _Requirements: 19.5–19.9_
+  - [ ] 14.7 Add property tests for no blanket signature, changed-since-review exclusion, per-record traceability, retry idempotency, and acknowledgement invalidation.
+    - _Requirements: 18.1–18.11, 19.1–19.12, 43.2–43.8_
+
+- [ ] 15. Build the physical-card-inspired Monthly Work Record experience
+  - [ ] 15.1 Implement a monthly read model with every valid date, Calendar_Day state, Work_Record version/status, start/end, verification, acknowledgement, remark, hours, and permitted monetary projection.
+    - _Requirements: 20.1–20.10_
+  - [ ] 15.2 Build the desktop/tablet adaptive grid with expandable details, sticky monthly totals, Closed rows, authorized Closed-day label, and evidence drawer.
+    - _Requirements: 20.3–20.10, 20.12–20.14_
+  - [ ] 15.3 Build the mobile date-card list and detail screen with status, start/end, duration, current action, timeline, evidence, edits, acknowledgement, and Dispute.
+    - _Requirements: 20.11, 32.2–32.6_
+  - [ ] 15.4 Present verified, pending, and disputed totals separately and label monetary projections Estimated/Not Finalized.
+    - _Requirements: 20.4–20.8, 23.4, 26.5–26.7_
+  - [ ] 15.5 Implement semantic table/card labels, keyboard navigation, focus management, text/icon status, localized time/date/number/currency, and responsive reflow.
+    - _Requirements: 20.13, 33.1–33.10_
+  - [ ] 15.6 Add visual, responsive, accessibility, localization, permission, 28–31 day month, and slow/offline state tests.
+    - _Requirements: 20.1–20.15, 32.1–32.14, 33.1–33.13_
+
+- [ ] 16. Implement effective-dated compensation and constrained Pay Rules
+  - [ ] 16.1 Implement versioned Compensation_Profile drafting, submission, exact-digest approval, immutable approved versions, and historical resolution.
+    - _Requirements: 21.1–21.7_
+  - [ ] 16.2 Implement ambiguous-overlap detection for approved compensation intervals and block unresolved date coverage.
+    - _Requirements: 21.5–21.7_
+  - [ ] 16.3 Implement the selected constrained deterministic Pay_Rule representation with typed units, conditions, tables, caps, rounding, effective dates, and versioned references.
+    - _Requirements: 21.8–21.12, 22.1–22.7_
+  - [ ] 16.4 Implement validation for cycles, ambiguous currency, unsupported references, non-determinism, and invalid fixed-precision operations.
+    - _Requirements: 21.9–21.11_
+  - [ ] 16.5 Implement reason-coded Adjustment preparation and maker-checker approval.
+    - _Requirements: 21.13–21.14_
+  - [ ] 16.6 Add generated effective-date, overlap, boundary, currency, rounding, formula, approval, and historical-resolution tests.
+    - _Requirements: 21.1–21.14, 22.1–22.9, 43.2–43.5_
+
+- [ ] 17. Implement Estimated/Not Finalized payroll calculation
+  - [ ] 17.1 Implement dependency resolution for exact calendar, Work_Record, Compensation_Profile, Pay_Rule, Adjustment, currency, and calculation-engine versions.
+    - _Requirements: 23.1–23.3, 23.13–23.14_
+  - [ ] 17.2 Implement affected Worker/Payroll_Period recalculation triggered by accepted source-version changes.
+    - _Requirements: 23.1, 24.4–24.8, 38.6–38.7_
+  - [ ] 17.3 Implement deterministic line evaluation for normal work, categorized overtime, incentives, allowances, advances, deductions, and Adjustments.
+    - _Requirements: 22.1–22.7, 23.3–23.12_
+  - [ ] 17.4 Implement fixed-precision aggregation under exact configured rounding order and prohibit duplicate work counting.
+    - _Requirements: 21.10–21.11, 23.5–23.10_
+  - [ ] 17.5 Implement warning/blocker classification for missing, invalid, duplicate, overlap, Dispute, verification, authorization, consent, rule, and currency conditions.
+    - _Requirements: 23.11–23.12, 25.1–25.4_
+  - [ ] 17.6 Store line-level provenance, Input_Digest, result digest, explanation keys, and Estimated/Not Finalized status.
+    - _Requirements: 23.3–23.4, 23.13–23.15_
+  - [ ] 17.7 Add property tests for deterministic calculation, idempotent reuse, fixed-precision conservation, non-overlapping classification, effective-version resolution, and no duplicate counting.
+    - _Requirements: 21.5–21.11, 23.1–23.15, 43.2–43.8_
+
+- [ ] 18. Implement daily/monthly HR and payroll review
+  - [ ] 18.1 Build permission-scoped daily review with current source, evidence, exception, version, and payroll-inclusion state.
+    - _Requirements: 24.1, 24.10_
+  - [ ] 18.2 Build the monthly Payroll_Ledger_Entry list and drill-down with Worker status, calculation, readiness, review, exception, source change, exact rules, and explanation.
+    - _Requirements: 24.2, 23.14, 32.3–32.6_
+  - [ ] 18.3 Implement HR review decisions bound to the current Input_Digest.
+    - _Requirements: 24.3, 24.11_
+  - [ ] 18.4 Implement Stale_Review/Reopened state when any referenced source changes the Input_Digest.
+    - _Requirements: 24.4–24.8_
+  - [ ] 18.5 Implement dependency-scoped recalculation and before/after impact presentation for approved changes.
+    - _Requirements: 24.5–24.9_
+  - [ ] 18.6 Add tests for stale review, partial affected scope, calculation failure, salary masking, and current-digest re-review.
+    - _Requirements: 24.1–24.11_
+
+- [ ] 19. Implement readiness, atomic finalization, and immutable snapshots
+  - [ ] 19.1 Implement Readiness_Report generation for every configured and non-downgradable blocker.
+    - Include checked Input_Digest, policy versions, warnings, blockers, and timestamp.
+    - _Requirements: 25.1–25.4_
+  - [ ] 19.2 Implement finalizer authorization, Resource_Scope, Step_Up_Authentication, Maker_Checker_Policy, and period/cohort locking.
+    - _Requirements: 25.5–25.6_
+  - [ ] 19.3 Reload all finalization inputs under lock and compare current Input_Digest with readiness and review digests.
+    - _Requirements: 25.7–25.9_
+  - [ ] 19.4 Implement atomic Payroll_Snapshot construction with included Worker results, complete locked provenance closure, approval evidence, readiness digest, snapshot digest, actor, and time.
+    - _Requirements: 25.10–25.14_
+  - [ ] 19.5 Implement rollback so injected failure yields no partial snapshot or Payslip artifacts.
+    - _Requirements: 25.12–25.15_
+  - [ ] 19.6 Implement concurrency control so one finalization attempt creates the applicable snapshot version.
+    - _Requirements: 25.6–25.15_
+  - [ ] 19.7 Add property and fault-injection tests for stale digest, unreviewed Worker, blocker, concurrent attempt, provenance closure, snapshot immutability, and all-or-nothing finalization.
+    - _Requirements: 25.1–25.15, 43.8, 43.13_
+
+- [ ] 20. Implement Payslips, estimate visibility, and finalization boundaries
+  - [ ] 20.1 Generate one versioned Payslip per included Worker result only from a complete Payroll_Snapshot.
+    - _Requirements: 26.1, 25.10–25.12_
+  - [ ] 20.2 Implement owner and separately authorized access, fresh authentication, protected delivery, and no-store behavior.
+    - _Requirements: 26.2–26.4, 26.9–26.10, 31.1–31.10_
+  - [ ] 20.3 Implement Tenant-configurable Worker monetary-estimate visibility while preserving visible authorized hours/status and finalized Payslip access.
+    - _Requirements: 26.5–26.8_
+  - [ ] 20.4 Implement explicit out-of-scope responses for post-final correction, off-cycle payroll, and revised Payslip requests.
+    - _Requirements: 27.1–27.4_
+  - [ ] 20.5 Keep future extension references non-executable and unable to modify prior snapshot content or digest.
+    - _Requirements: 27.5–27.6_
+  - [ ] 20.6 Add access, masking, cache, estimate-policy, immutable-file, and out-of-scope boundary tests.
+    - _Requirements: 26.1–26.10, 27.1–27.6_
+
+- [ ] 21. Build Worker and Supervisor browser-capable installable PWA shells
+  - [ ] 21.1 Implement role-specific Worker_PWA and Supervisor_PWA manifests, icons, start destinations, navigation, shortcuts, and scoped service-worker behavior.
+    - _Requirements: 28.1–28.5_
+  - [ ] 21.2 Implement browser-mode parity so installation is optional and install prompts are contextual, dismissible, explanatory, and non-blocking.
+    - _Requirements: 28.2, 28.6–28.8_
+  - [ ] 21.3 Implement explicit server-authorized role switching without deriving Permissions from installation or navigation state.
+    - _Requirements: 28.3–28.5_
+  - [ ] 21.4 Implement versioned app-shell update states, safe activation boundaries, deferred non-critical reload, and security-required session invalidation.
+    - _Requirements: 28.9–28.11_
+  - [ ] 21.5 Keep Management_Web, Tenant_Management_Admin_Panel, and Platform_Admin_Console responsive while installability remains an explicit open choice.
+    - _Requirements: 28.13, 42.9_
+  - [ ] 21.6 Add installed/browser parity, manifest, service-worker scope, update interruption, role-switch, revocation, and supported-matrix tests.
+    - _Requirements: 28.1–28.13, 43.11_
+
+- [ ] 22. Implement safe offline queues and capability degradation
+  - [ ] 22.1 Implement policy allowlisting for offline-capable actions and minimized Pending_Offline_Action storage with Tenant, Principal, session, digest, Expected_Version, timestamps, expiry, and state.
+    - _Requirements: 29.1–29.4, 29.15_
+  - [ ] 22.2 Implement encrypted session-bound local payloads where available and online-only behavior where durable safe storage is unavailable.
+    - _Requirements: 29.2, 30.6–30.8, 31.1–31.2_
+  - [ ] 22.3 Implement foreground reconciliation on launch, focus, online event, and manual retry, with opportunistic background synchronization.
+    - _Requirements: 29.5–29.7, 30.3_
+  - [ ] 22.4 Implement server acceptance, rejection, conflict, and expiry outcomes with at-most-once mutation and no last-write-wins for sensitive workflows.
+    - _Requirements: 29.8–29.14_
+  - [ ] 22.5 Implement Capability_Fallback behavior for installation, push, background sync, camera, geolocation, storage, and offline network.
+    - _Requirements: 30.1–30.11_
+  - [ ] 22.6 Implement secure logout/revocation purge for retries, session keys, payloads, push subscriptions, sensitive caches, and role read models.
+    - _Requirements: 31.1–31.10_
+  - [ ] 22.7 Add property tests for offline non-finality, stable queue ordering, retry idempotency, session mismatch, expiry, conflict, fallback safety, and unreadable data after purge.
+    - _Requirements: 29.1–29.15, 30.1–30.11, 31.1–31.10, 43.2–43.11_
+
+- [ ] 23. Build the shared responsive design system and role dashboards
+  - [ ] 23.1 Implement semantic tokens and adaptive primitives for app shells, navigation, cards, grids/tables, forms, filters, timelines, calendars, status, evidence, approval, batch review, and feedback.
+    - _Requirements: 32.1–32.5_
+  - [ ] 23.2 Implement complete loading, empty, error, partial, denied, offline, Pending, conflict, stale, success, maintenance, restricted, and suspended states.
+    - _Requirements: 32.6–32.12_
+  - [ ] 23.3 Implement permission-composed dashboards for Worker, Supervisor, Management/HR/Payroll, Tenant administration, and Platform administration.
+    - _Requirements: 32.13–32.14, 2.1–2.7_
+  - [ ] 23.4 Implement accessible form, destructive-action, high-risk confirmation, conflict recovery, and non-sensitive draft behavior.
+    - _Requirements: 32.7–32.12, 33.1–33.6_
+  - [ ] 23.5 Implement localization keys, plurals, locale-aware dates/numbers/currency, Site time-zone labels, text expansion, fallback locale, and bidirectional readiness.
+    - _Requirements: 33.7–33.13_
+  - [ ] 23.6 Add responsive visual regression, keyboard, screen-reader, zoom/reflow, contrast, reduced-motion, touch-target, pseudo-locale, text-expansion, and chart/table-equivalence tests.
+    - _Requirements: 32.1–32.14, 33.1–33.13, 43.12_
+
+- [ ] 24. Implement notifications and task delivery
+  - [ ] 24.1 Implement domain task creation for attendance, overtime consent, consent deadline, checkout, acknowledgement, changed record, Dispute, stale review, readiness blocker, and Payslip publication.
+    - _Requirements: 34.1–34.9_
+  - [ ] 24.2 Implement in-app inbox and task badges as the authoritative notification fallback.
+    - _Requirements: 30.1–30.2, 34.10–34.11_
+  - [ ] 24.3 Implement versioned, Tenant-aware, localized, PII-minimized templates and configured push/email/SMS adapters.
+    - _Requirements: 34.11–34.14_
+  - [ ] 24.4 Implement idempotent delivery retries and ensure delivery cannot authorize, mutate, satisfy consent, or change domain deadlines.
+    - _Requirements: 34.10–34.11_
+  - [ ] 24.5 Implement encrypted push-subscription registration, rotation, revocation, ownership, and lifecycle linkage.
+    - _Requirements: 31.6, 35.3–35.5_
+  - [ ] 24.6 Add duplicate delivery, provider failure, fallback, revoked endpoint, privacy, and task-retention tests.
+    - _Requirements: 30.1–30.3, 34.1–34.14_
+
+- [ ] 25. Implement security, privacy, and audit controls
+  - [ ] 25.1 Implement encryption, key rotation, secure sessions, MFA/Step_Up_Authentication, rate limits, anti-automation, request-forgery defenses, and device/session revocation using approved standards.
+    - _Requirements: 35.1–35.4, 35.9_
+  - [ ] 25.2 Implement field classification, masking, protected-object access, short-lived retrieval, upload content validation, and malware scanning.
+    - _Requirements: 35.5–35.8_
+  - [ ] 25.3 Implement purpose, notice, precision, and retention enforcement for location/device evidence.
+    - _Requirements: 35.10, 40.1–40.8_
+  - [ ] 25.4 Implement append-only Audit_Event persistence with actor boundary, Tenant, resource/version, policy, before/after digests, reason, correlation, session/device/support context, and outcome.
+    - _Requirements: 36.1–36.8, 36.12_
+  - [ ] 25.5 Implement configured hash chaining or periodic integrity anchoring for high-value events.
+    - _Requirements: 36.9–36.10_
+  - [ ] 25.6 Implement permissioned audit query/export with Tenant, row, field, time, and data-classification scope.
+    - _Requirements: 36.11, 39.5–39.9_
+  - [ ] 25.7 Add threat-model tests for cross-Tenant substitution, support impersonation, salary inference, cache leakage, queue tampering, QR replay, privilege escalation, formula abuse, telemetry leakage, and app-shell supply chain.
+    - _Requirements: 1.1–1.10, 4.1–4.13, 15.1–15.13, 35.1–35.14, 43.9–43.11_
+
+- [ ] 26. Implement observability, asynchronous reliability, and recovery
+  - [ ] 26.1 Implement privacy-safe metrics for calendar, attendance, consent, checkout, Work_Record, payroll, notification, provisioning, support, PWA, offline, authorization, and finalization health.
+    - _Requirements: 37.1–37.2_
+  - [ ] 26.2 Implement correlation/causation propagation across commands, Integration_Events, jobs, notifications, read models, and support context.
+    - _Requirements: 37.3_
+  - [ ] 26.3 Implement atomic state/event publication, at-least-once delivery, idempotent event consumption, retry, and recoverable failed-message handling.
+    - _Requirements: 37.4–37.6_
+  - [ ] 26.4 Implement alerts for the approved failure and security conditions without sensitive labels or payloads.
+    - _Requirements: 37.2, 37.7_
+  - [ ] 26.5 Implement Tenant-scoped recovery tools, point-in-time restore, immutable-object restore, and post-restore integrity verification.
+    - _Requirements: 37.8–37.10_
+  - [ ] 26.6 Add duplicate event, outbox failure, queue backpressure, recovery, restore, audit failure, and evidence-store degradation tests.
+    - _Requirements: 37.3–37.10_
+
+- [ ] 27. Implement exports, integrations, retention, and historical migration
+  - [ ] 27.1 Implement permissioned monthly work card, overtime package, payroll ledger, Payslip, audit, and evidence exports with source versions and Integrity_Manifest.
+    - Preserve Pending, disputed, stale, excluded, and blocked states.
+    - _Requirements: 39.1–39.9_
+  - [ ] 27.2 Implement Integration_Principal credential scoping, rotation, versioned contracts, replay protection, idempotency, reconciliation, and restricted event payloads.
+    - _Requirements: 39.10–39.14_
+  - [ ] 27.3 Implement retention classes and approved versioned policy execution for identity, employment, Work_Record, evidence, location, payroll, Payslip, audit, notification, idempotency, and local-action data.
+    - _Requirements: 40.1–40.8_
+  - [ ] 27.4 Implement historical paper evidence import with protected file, digest, field mapping, importer, verifier, quality status, and migrated labels.
+    - _Requirements: 41.1–41.5_
+  - [ ] 27.5 Implement optional OCR as unverified assistance and prohibit fabricated digital attendance, QR, consent, verification, or acknowledgement facts.
+    - _Requirements: 41.3–41.5_
+  - [ ] 27.6 Implement pre-go-live reconciliation for daily totals, OT, incentives, allowances, advances/deductions, gross, and net with reason-coded differences and non-final shadow status.
+    - _Requirements: 41.6–41.9_
+  - [ ] 27.7 Add export integrity, parser/serializer round-trip where applicable, integration replay, retention hold, snapshot-reference, import provenance, and reconciliation tests.
+    - _Requirements: 39.1–39.14, 40.1–40.8, 41.1–41.9, 43.14_
+
+- [ ] 28. Establish performance, accessibility, security, and reliability release gates
+  - [ ] 28.1 Convert approved numeric startup, interaction, API, reconciliation, data-view, background-job, payroll, availability, and recovery targets into automated or monitored gates.
+    - _Requirements: 38.1–38.3_
+  - [ ] 28.2 Build representative load profiles for attendance, checkout, reconnect reconciliation, notifications, month-end calculation/review/finalization, exports, provisioning, and support audit.
+    - _Requirements: 38.3–38.4_
+  - [ ] 28.3 Implement Tenant-aware fair scheduling, quotas, calculation deduplication, affected-scope recalculation, and safe large-export processing.
+    - _Requirements: 38.5–38.9_
+  - [ ] 28.4 Enforce time-bound exception governance for performance regressions.
+    - _Requirements: 38.10_
+  - [ ] 28.5 Configure approved accessibility, security scanning, dependency, secret, static, dynamic, infrastructure, privacy, and responsive visual gates.
+    - _Requirements: 33.11–33.13, 35.14, 43.10–43.12_
+  - [ ] 28.6 Test noisy-neighbor behavior, queue backpressure, failover, restore, and peak payroll throughput against approved targets.
+    - _Requirements: 37.9–37.11, 38.1–38.10_
+
+- [ ] 29. Complete cross-domain property-based and state-machine verification
+  - [ ] 29.1 Implement property tests for Tenant isolation, platform salary isolation, support boundedness, and surface-independent authorization.
+    - **Feature: workforce-payroll-management-saas, Properties 1, 19, 20, 21**
+    - _Requirements: 1.1–1.10, 2.3–2.9, 4.1–4.13_
+  - [ ] 29.2 Implement property tests for Closed-day prohibition, Closed classification preservation, and bounded Closed-day authorization.
+    - **Feature: workforce-payroll-management-saas, Properties 2, 3, 4**
+    - _Requirements: 9.1–9.8, 13.1–13.10, 14.1–14.10_
+  - [ ] 29.3 Implement property tests for dual-confirmation uniqueness and QR replay resistance.
+    - **Feature: workforce-payroll-management-saas, Properties 5, 6**
+    - _Requirements: 11.1–11.10, 15.1–15.13_
+  - [ ] 29.4 Implement property tests for safe batch acknowledgement, per-record traceability, and acknowledgement invalidation.
+    - **Feature: workforce-payroll-management-saas, Properties 7, 8, 9**
+    - _Requirements: 17.10–17.11, 18.1–18.11, 19.1–19.12_
+  - [ ] 29.5 Implement property tests for effective compensation, calculation determinism, duplicate prevention, fixed-precision conservation, and stale review reopening.
+    - **Feature: workforce-payroll-management-saas, Properties 10, 11, 12, 13, 18**
+    - _Requirements: 21.1–21.14, 23.1–23.15, 24.3–24.9_
+  - [ ] 29.6 Implement property tests for finalization atomicity, provenance closure, and Maker_Checker_Policy.
+    - **Feature: workforce-payroll-management-saas, Properties 14, 15, 16**
+    - _Requirements: 6.3–6.8, 25.1–25.15_
+  - [ ] 29.7 Implement property tests for estimate visibility, offline non-finality, safe purge, browser/install parity, capability fallback, provisioning convergence, and entitlement non-authority.
+    - **Feature: workforce-payroll-management-saas, Properties 17, 22, 23, 24, 25, 26, 27**
+    - _Requirements: 2.8–2.9, 3.1–3.4, 26.5–26.8, 28.1–28.12, 29.1–29.15, 30.1–30.11, 31.1–31.10_
+  - [ ] 29.8 Configure at least 100 generated iterations per property, shrinking, deterministic failure replay, and retained minimized regression fixtures.
+    - _Requirements: 43.2–43.5_
+  - [ ] 29.9 Implement model-based state-machine suites for calendar, overtime, Work_Record, batch acknowledgement, offline reconciliation, payroll review, and finalization.
+    - _Requirements: 43.6–43.8_
+
+- [ ] 30. Complete end-to-end validation and controlled rollout
+  - [ ] 30.1 Validate ordinary Working-day flow from calendar through Toolbox_Meeting, Dual_Attendance_Confirmation, checkout, Supervisor verification, Worker acknowledgement, calculation, review, readiness, finalization, and Payslip.
+    - _Requirements: 8.1–8.12, 10.1–11.10, 15.1–20.15, 23.1–26.10_
+  - [ ] 30.2 Validate Working_Day_OT and Closed_Day_OT flows including exact authorization, pre-work consent, planned-versus-actual comparison, scope mismatch, and exception handling.
+    - _Requirements: 9.1–9.8, 12.1–16.10_
+  - [ ] 30.3 Validate source corrections after Worker acknowledgement and HR review, scoped recalculation, changed-since-review exclusion, stale review, and current-digest reapproval.
+    - _Requirements: 17.10–19.12, 24.3–24.9_
+  - [ ] 30.4 Validate browser/install parity, offline capture, foreground reconciliation, capability denial, update recovery, push fallback, logout, role loss, Tenant suspension, and sensitive-data purge.
+    - _Requirements: 28.1–31.10, 34.10–34.14_
+  - [ ] 30.5 Validate Control_Plane versus Tenant_Data_Plane isolation, lifecycle transitions, governed support, Break_Glass_Session review, and platform attempts to infer Tenant payroll.
+    - _Requirements: 1.1–4.13_
+  - [ ] 30.6 Validate finalized snapshot reproducibility, complete provenance, all-or-nothing failure handling, immutable Payslips, and explicit rejection of post-final workflows.
+    - _Requirements: 25.1–27.6_
+  - [ ] 30.7 Execute qualified payroll reconciliation and shadow payroll for the pilot scope without publishing Payslips.
+    - _Requirements: 22.4–22.9, 41.6–41.9_
+  - [ ] 30.8 Pilot one approved Site with monitored attendance, consent, checkout, Dispute, calculation, accessibility, performance, and support metrics.
+    - _Requirements: 37.1–38.10_
+  - [ ] 30.9 Complete security, privacy, accessibility, legal/compliance, operational recovery, and payroll sign-off before enabling finalization.
+    - _Requirements: 22.4–22.9, 33.11–33.13, 35.1–40.8_
+  - [ ] 30.10 Expand by approved Site or Tenant cohort using explicit rollback criteria, versioned configuration, and monitored exception rates.
+    - _Requirements: 3.1–3.11, 37.1–38.10_
