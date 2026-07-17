@@ -1,12 +1,25 @@
 # Implementation Decision Register
 
+> **Policy classification: DRAFT – NOT APPROVED – NOT FOR PRODUCTION**
+>
+> This authorization permits an unapproved baseline only. Nothing in this register constitutes production, Singapore MOM, legal, payroll, privacy, contract, compliance, Tenant, security, accessibility, or operational approval.
+
 ## 1. Purpose and authority
 
-This register is the implementation and rollout gate for Task 1.1 of the Workforce Payroll Management SaaS specification. It records what is already confirmed, what may vary by Tenant, and what must be approved before dependent implementation or rollout proceeds. It does **not** approve a technology, vendor, statutory interpretation, commercial rule, browser baseline, retention period, or numeric service target.
+This register is the implementation and rollout gate for [Task 1.1](tasks.md) of the Workforce Payroll Management SaaS specification. It records what is already confirmed, what may vary by Tenant, and what must be approved before dependent implementation or rollout proceeds. It does **not** approve a technology, vendor, statutory interpretation, commercial rule, browser baseline, retention period, numeric service target, or generated policy.
 
 The [requirements](requirements.md) remain the source of truth for business behavior, and the [design](design.md) remains the architecture source. If this register conflicts with either document, the requirements take precedence, followed by the design. An entry marked `Confirmed` records an existing requirement or confirmed design boundary; it does not create a new business rule. An `Approved Implementation Choice` is valid only when its approval evidence is recorded in this register.
 
 **Current baseline:** no implementation technology or vendor choice has approval evidence in the specification. Therefore, this initial register contains no `Approved Implementation Choice` entries. Open choices remain `Blocking Prerequisite` rather than being inferred from design proposals.
+
+### 1.1 Unapproved-baseline controls
+
+- Every generated policy, seed, configurable range, and policy assumption in this register is classified exactly **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** unless it is a directly traced `Confirmed` requirement invariant. A `Confirmed` invariant is specification evidence only and does not constitute external, business, or production approval.
+- Industry-standard RBAC, Maker-Checker, Segregation of Duties, Break Glass, least privilege, and audit logging may be used only as an initial draft baseline for development contracts and tests.
+- Every policy value must be stored in versioned configuration tables and managed through the applicable Platform Admin Console or Tenant Management Admin Panel. Policy values must never be hardcoded; absent, ambiguous, invalid, or unapproved policy configuration must fail closed.
+- Every generated policy requires explicit, recorded business approval of its exact version and digest before production rollout. A draft, feature flag, entitlement, deployment, or Tenant selection cannot substitute for approval.
+- This register records no Singapore MOM, legal, payroll, privacy, contract, or compliance interpretation or approval. Qualified, current, Tenant-scoped evidence remains mandatory where required.
+- `G-TENANT-ROLLOUT` is **CLOSED**. `G-PAYROLL-PRODUCTION` is **CLOSED**. Development may continue only through technology-neutral contracts and non-production draft configuration until the applicable gates are opened by evidence.
 
 ## 2. Controlled status model
 
@@ -23,13 +36,15 @@ A design proposal is not an approved implementation choice. A Tenant configurati
 
 ## 3. Gate definitions and approval record
 
-| Gate | Gate closes when | Gate may open only when |
-|---|---|---|
-| `G-IMPLEMENTATION` | A dependency-specific implementation would select or materially couple to an unapproved technology, provider, topology, or delivery contract. | The accountable engineering and security owners approve a choice with evidence, alternatives, compatibility, migration/exit, and risk assessment. |
-| `G-TENANT-ROLLOUT` | A Tenant or feature cohort would use an unapproved policy, capability baseline, integration, distribution method, or configuration range. | The accountable product, Tenant, security/privacy, and other named Qualified_Stakeholders approve the exact scope and configuration. |
-| `G-PAYROLL-PRODUCTION` | Production payroll calculation, finalization, statutory reporting, or Payslip publication would rely on unvalidated policy or contract. | Required Singapore PTE, MOM, contractual, payroll, legal, and compliance validation evidence is current and Tenant-scoped. |
-| `G-PRODUCTION-OPERATIONS` | Production operation would begin without approved browser/device, accessibility, localization, notification, retention/residency, availability, performance, recovery, or support targets. | Accountable operational, security, privacy, accessibility, product, and legal owners approve measurable targets and release/exception governance. |
-| `G-RELEASE` | A release fails an approved security, accessibility, performance, privacy, compatibility, or reliability criterion. | The issue is remediated or a named owner approves a bounded, expiring exception with rationale and remediation plan. |
+| Gate | Current state | Gate remains closed when | Gate may open only when |
+|---|---|---|---|
+| `G-IMPLEMENTATION` | `CLOSED` | A dependency-specific implementation would select or materially couple to an unapproved technology, provider, topology, or delivery contract. | The accountable engineering and security owners approve a choice with evidence, alternatives, compatibility, migration/exit, and risk assessment. |
+| `G-TENANT-ROLLOUT` | `CLOSED` | A Tenant or feature cohort would use an unapproved policy, capability baseline, integration, distribution method, or configuration range. | The accountable product, Tenant, security/privacy, and other named Qualified_Stakeholders approve the exact scope and configuration. |
+| `G-PAYROLL-PRODUCTION` | `CLOSED` | Production payroll calculation, finalization, statutory reporting, or Payslip publication would rely on unvalidated policy or contract. | Required Singapore PTE, MOM, contractual, payroll, legal, and compliance validation evidence is current and Tenant-scoped. |
+| `G-PRODUCTION-OPERATIONS` | `CLOSED` | Production operation would begin without approved browser/device, accessibility, localization, notification, retention/residency, availability, performance, recovery, or support targets. | Accountable operational, security, privacy, accessibility, product, and legal owners approve measurable targets and release/exception governance. |
+| `G-RELEASE` | `CLOSED` | A release lacks approved gate criteria or fails an approved security, accessibility, performance, privacy, compatibility, or reliability criterion. | The release criteria are approved and satisfied, or a named owner approves a bounded, expiring exception with rationale and remediation plan where exceptions are permitted. |
+
+A `CLOSED` gate is a governance state, not one of the decision-entry statuses in Section 2. No text elsewhere in this register opens a gate; only the evidence process in this section can do so.
 
 For an entry to move to `Approved Implementation Choice`, record all of the following in its **Approval evidence** field: selected option and version or contract revision; scope and effective date; accountable owner and approver; decision date; alternatives considered; security/privacy/multi-tenancy impact; portability, recovery, and rollback/exit approach; validation results; and a stable evidence reference. Approval evidence must not contain secrets, personal data, payroll amounts, or protected evidence.
 
@@ -114,6 +129,23 @@ For an entry to move to `Approved Implementation Choice`, record all of the foll
 | `SLO-03` | Alert thresholds, operational owners, support objectives, and time-bound exceptions | `Blocking Prerequisite` | Failure/security conditions are identified, but thresholds, paging ownership, support hours, response objectives, escalation, and exception duration are not approved. Alerts and telemetry must exclude worker identifiers, salary, exact location, endpoints, and raw evidence. | `G-PRODUCTION-OPERATIONS`; SRE + Security Operations + Support + Privacy | Not approved | Requirements 37.2, 37.7, 38.10, 42.8; Design §§21.1–21.2, 27.1 |
 | `SLO-04` | Representative workload and device/network dimensions | `Confirmed` | Validation must include low/mid/high supported devices, constrained networks, attendance and checkout peaks, reconnect reconciliation, notification bursts, month-end recalculation/review/finalization, exports, provisioning, support audit, and noisy-neighbor behavior. Exact volumes remain blocked by `SLO-02`. | Mandatory validation scope; Performance Engineering + SRE | Requirements/design are the evidence | Requirements 38.2–38.9; Design §24.7 |
 
+### 4.7.1 Task 1.1 assumptions
+
+Every assumption below is **DRAFT – NOT APPROVED – NOT FOR PRODUCTION**. The assumptions support sequential development only and cannot open a gate or authorize production behavior.
+
+| Assumption ID | Status | Assumption | Required treatment |
+|---|---|---|---|
+| `IDR-A01` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | Authorization is limited to drafting an unapproved baseline. | Treat all generated policy content as non-production until exact-version business approval is recorded. |
+| `IDR-A02` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | No technology, vendor, deployment topology, isolation tier catalog, identity provider, storage product, queue, notification provider, signing provider, renderer, PWA distribution model, support matrix, localization scope, retention value, or numeric service objective is approved. | Keep each open item a `Blocking Prerequisite` and preserve its technology-neutral contract. |
+| `IDR-A03` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | Approval-owner labels in this register are routing proposals based on the competency implied by the requirements; named accountable people and organizational authority are not yet supplied. | Confirm accountable owners before accepting approval evidence or opening any gate. |
+| `IDR-A04` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | `Tenant Configuration` denotes a required configurable capability, not an approved Tenant value or permission to roll out. | Permit selection only among subsequently approved platform options and retain `G-TENANT-ROLLOUT` as `CLOSED` until exact Tenant approval evidence exists. |
+| `IDR-A05` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | Every policy value is administered through the applicable Admin Panel and persisted in versioned configuration tables; no policy value is hardcoded. | Fail closed for missing, invalid, ambiguous, expired, or unapproved configuration and audit all draft, approval, activation, supersession, and rollback transitions. |
+| `IDR-A06` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | Industry-standard RBAC, Maker-Checker, Segregation of Duties, Break Glass, least privilege, and audit logging are suitable only as initial development baselines. | Require explicit business and security approval of the exact policy version/digest before production activation. |
+| `IDR-A07` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | Sequential development may continue while gates are closed when it depends only on neutral interfaces, configurable draft policy, and confirmed invariants. | Stop before provider coupling, irreversible implementation, Tenant rollout, payroll production, or production operations that require missing approval evidence. |
+| `IDR-A08` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | This register supplies no Singapore MOM, legal, payroll, privacy, contract, compliance, statutory, formula, rate, threshold, standard day/hour, rounding, or interpretation approval. | Keep `G-PAYROLL-PRODUCTION` `CLOSED` until current Tenant-scoped Qualified_Stakeholder evidence is recorded. |
+| `IDR-A09` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | No supported-device baseline, retention duration, data-residency location, legal-deletion rule, numeric SLO, support objective, alert threshold, or performance budget may be inferred from examples or design proposals. | Record each value only after its required approval and evidence; until then keep the relevant rollout/operations gate closed. |
+| `IDR-A10` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | `Confirmed` entries reproduce requirement/design invariants and do not imply that an external policy, implementation, or production release has been approved. | Preserve requirement precedence and separately approve every implementation choice and generated policy. |
+
 ### 4.8 Adjacent rollout gates referenced by this task
 
 These entries identify adjacent dependencies, record the Task 1.2 disposition, and govern the unapproved Task 1.3 draft baseline.
@@ -121,7 +153,7 @@ These entries identify adjacent dependencies, record the Task 1.2 disposition, a
 | ID | Decision | Status | Current controlling position | Gate / approval owner | Approval evidence | Traceability |
 |---|---|---|---|---|---|---|
 | `XG-01` | Qualified payroll and statutory policy validation | `Blocking Prerequisite` | **Disposition:** External Dependency; Manual Compliance Validation Before Production; Not Required For Development. No compliance validation is recorded by this disposition. Development may proceed only with configurable, technology-neutral payroll-policy contracts and no invented Singapore PTE, MOM, contractual, payroll, legal, privacy, or compliance policy, formula, rate, threshold, standard day/hour, rounding rule, interpretation, evidence, or approval. `G-PAYROLL-PRODUCTION` remains closed until current, Tenant-scoped Qualified_Stakeholder validation evidence is recorded. | `G-PAYROLL-PRODUCTION`; Qualified_Stakeholders | Not validated; disposition decision only | Requirements 22.1–22.9, 42.7; Task 1.2 |
-| `XG-02` | Permission catalog, default roles, risk tiers, approval counts, SoD, step-up, and break-glass policy | `Blocking Prerequisite` | `access-governance-baseline.md` version `1.0.0-draft` is a complete industry-standard proposal and is marked **DRAFT – NOT APPROVED – NOT FOR PRODUCTION**. It is not Singapore MOM, legal, contract, payroll, privacy, compliance, Tenant, or security approved. Every value is represented as versioned configuration administered through the applicable Admin Panel; no title implies authority and no policy value may be hardcoded. The draft may support sequential development but cannot become production-active until the exact digest receives explicit business/security approval. `G-TENANT-ROLLOUT` remains closed. | `G-TENANT-ROLLOUT`; Tenant Security Owner + Platform Security | Draft authorization from user permits proposal only; no production approval | Requirements 2.5–2.9, 4.1–4.13, 6.1–6.11, 35.1–35.2, 42.3; Task 1.3; `access-governance-baseline.md` |
+| `XG-02` | Permission catalog, default roles, risk tiers, approval counts, SoD, step-up, and break-glass policy | `Blocking Prerequisite` | [access-governance-baseline.md](access-governance-baseline.md) version `1.0.0-draft` is a complete industry-standard proposal and is marked **DRAFT – NOT APPROVED – NOT FOR PRODUCTION**. It is not Singapore MOM, legal, contract, payroll, privacy, compliance, Tenant, or security approved. Every value is represented as versioned configuration administered through the applicable Admin Panel; no title implies authority and no policy value may be hardcoded. The draft may support sequential development but cannot become production-active until the exact digest receives explicit business/security approval. `G-TENANT-ROLLOUT` remains closed. | `G-TENANT-ROLLOUT`; Tenant Security Owner + Platform Security | Draft authorization from user permits proposal only; no production approval | Requirements 2.5–2.9, 4.1–4.13, 6.1–6.11, 35.1–35.2, 42.3; Task 1.3; [access-governance-baseline.md](access-governance-baseline.md) |
 | `XG-03` | Attendance, QR, acknowledgement, and payroll rollout parameters | `Blocking Prerequisite` | Meeting timing/grace/disagreement policy; checkpoint model/challenge lifetime/evidence/privacy; acknowledgement cadence/batch/cutoff/authentication; and payroll cutoff/time-zone/approval/publication/finalization/estimate settings remain unapproved. | `G-TENANT-ROLLOUT` and `G-PAYROLL-PRODUCTION`; Tenant Operations + Security/Privacy + Payroll Stakeholders | Not approved | Requirements 42.4–42.7 |
 | `XG-04` | Post-final correction, off-cycle payroll, and revised Payslip workflows | `Confirmed` | These workflows are excluded from this feature version. Extension references may exist but cannot execute or alter a finalized Payroll_Snapshot or published Payslip. | Scope boundary; Product + Payroll Architecture | Requirements/design are the evidence | Requirements 27.1–27.6, 42.10; Design §§1.3, 13.3 |
 
@@ -194,7 +226,7 @@ Dependent design and test work may proceed only against these neutral capability
 | Service objectives | `SLO-01`–`SLO-04` | 37.11, 38.1–38.10, 42.8 | §§21, 24.7, 27.1, 28.27 |
 | Adjacent implementation/rollout gates | `XG-01`–`XG-04` | 42.3–42.10 | §§28.3–28.18 |
 
-This register satisfies Task 1.1 by making every requested decision domain explicit, preserving neutral contracts while choices are open, and preventing proposals from being treated as approved production policy.
+This register satisfies Task 1.1 by making every requested decision domain explicit, preserving neutral contracts while choices are open, and preventing proposals from being treated as approved production policy. All generated policy content remains **DRAFT – NOT APPROVED – NOT FOR PRODUCTION**; `G-TENANT-ROLLOUT` and `G-PAYROLL-PRODUCTION` remain **CLOSED**.
 
 
 ## 8. Task 1.4 traceability assumptions
