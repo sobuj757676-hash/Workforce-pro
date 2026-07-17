@@ -195,3 +195,21 @@ Dependent design and test work may proceed only against these neutral capability
 | Adjacent implementation/rollout gates | `XG-01`–`XG-04` | 42.3–42.10 | §§28.3–28.18 |
 
 This register satisfies Task 1.1 by making every requested decision domain explicit, preserving neutral contracts while choices are open, and preventing proposals from being treated as approved production policy.
+
+
+## 8. Task 1.4 traceability assumptions
+
+Every assumption in this section is **DRAFT – NOT APPROVED – NOT FOR PRODUCTION**. These assumptions govern traceability administration only; they do not approve a business, access, payroll, legal, privacy, compliance, technology, vendor, or rollout policy.
+
+| Assumption ID | Status | Traceability assumption | Required treatment |
+|---|---|---|---|
+| `TR-A01` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | One matrix row may group all acceptance criteria under one top-level Requirement only when the row preserves the complete criterion range and links all controlling design, implementation, and verification work. | A later split or changed criterion must update the matrix in the same commit and retain complete coverage. |
+| `TR-A02` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | Task state is workflow metadata, not implementation or verification evidence. | `VERIFIED` requires concrete code symbols, stable test identifiers, a passing result, and durable commit/CI/report evidence. |
+| `TR-A03` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | The Code → Tests evidence register starts with specification/governance evidence because no application implementation task has completed. | Future implementation tasks append evidence records in the same commit as code/tests; historical records are not overwritten. |
+| `TR-A04` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | Policy-bearing code is traceable only when the record names its versioned configuration tables and the applicable Platform Admin Console or Tenant Management Admin Panel workflow. | Missing/invalid/ambiguous/unapproved configuration fails closed; no hardcoded policy fallback may authorize. |
+| `TR-A05` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | The Task 1.3 industry-standard RBAC, Maker-Checker, Segregation of Duties, Break Glass, least-privilege, and audit baseline may be referenced for development contracts and tests. | It remains **DRAFT – NOT APPROVED – NOT FOR PRODUCTION**; exact business/security approval is required before production activation and `G-TENANT-ROLLOUT` remains closed. |
+| `TR-A06` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | The Task 1.2 disposition permits development against configurable, technology-neutral payroll-policy contracts. | It records no Singapore MOM, legal, contract, payroll, privacy, or compliance approval; `G-PAYROLL-PRODUCTION` remains closed until current Tenant-scoped Qualified_Stakeholder evidence exists. |
+| `TR-A07` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | Property and state-machine traceability is controlled by design Properties 1–27 and Tasks 29.1–29.9. | Tests must preserve requirement annotations, property identity/statement, generator obligations, at least 100 iterations unless approved otherwise, shrinking, deterministic replay, and retained minimized counterexamples. |
+| `TR-A08` | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** | The traceability artifact itself cannot open an implementation, rollout, payroll-production, production-operations, or release gate. | Gate status changes only through the evidence and approval process defined in this register. |
+
+The authoritative Task 1.4 artifact is [traceability-matrix.md](traceability-matrix.md). It records complete Requirement 1–43 coverage, the 27-property crosswalk, and the mandatory ongoing Code → Tests evidence schema.
