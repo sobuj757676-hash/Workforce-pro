@@ -25,24 +25,35 @@ The Task 1.3 baseline in [access-governance-baseline.md](access-governance-basel
 | `BLOCKED_BY_GATE` | Implementation or rollout cannot proceed because a decision-register gate is closed. |
 | `EXTERNAL_VALIDATION_REQUIRED` | Qualified manual validation is required and cannot be replaced by code or automated tests. |
 
-All Requirement 1–43 rows are currently `SPECIFIED` unless the evidence column explicitly records a draft governance artifact. No application code or automated-test completion is claimed by Task 1.4.
+Each Requirement 1–43 row uses one or more statuses from this vocabulary according to the evidence and gate state recorded in that row. No row claims completed application code or automated-test execution at Task 1.4.
 
-### 2.2 Mandatory Code → Tests update record
+### 2.2 Mandatory append-only Code → Tests update record
 
-When an implementation task changes code or tests, update the applicable requirement row and add one evidence record in Section 5. Each record must contain all of these values; omission is a traceability failure:
+Every implementation or verification change set must update each affected requirement row and append at least one evidence record in Section 5 in the same commit. Evidence IDs are monotonic (`TR-<number>`) and immutable after that commit. If evidence is corrected, superseded, invalidated, or rerun, append a new record whose `Supersedes` field names the prior ID; never rewrite or delete the historical record.
 
-1. acceptance criteria in `R<requirement>.<criterion>` form;
-2. implementing task ID and verification task ID;
-3. repository-relative production path plus symbol, route, schema, migration, configuration table, or UI component;
-4. repository-relative test path plus stable test/property/state-machine identifier;
-5. test class: unit, example, edge, integration, security, state-machine, accessibility, performance, property, or manual validation;
-6. result and durable evidence: commit, CI run, report, or Qualified_Stakeholder evidence reference;
-7. policy/configuration impact, including Admin Panel surface and configuration-table names where policy values are involved;
-8. gate impact and confirmation that no closed gate was treated as open.
+Each appended record must contain all of these values; omission is a traceability failure:
 
-Use `**Validates: Requirements X.Y**` in property-based tests. Property tests must also identify feature name, design property number and statement, run at least 100 generated iterations unless an approved cost rationale is recorded, shrink failures, and retain minimized counterexamples as regression fixtures. A task checkbox or feature flag is not test evidence or policy approval.
+1. acceptance criteria in `R<requirement>.<criterion>` form (ranges are allowed only when every criterion has the same evidence);
+2. implementing task ID and verification task ID, recorded separately;
+3. repository-relative production path plus symbol, route, schema, migration, configuration table, or UI component; governance-only work must explicitly state `no application code`;
+4. repository-relative test path plus stable test, property, state-machine, accessibility scenario, performance scenario, or manual-validation identifier;
+5. test class: unit, example, edge, integration, security, state-machine, accessibility, performance, property, structural review, or qualified manual validation;
+6. result (`PASS`, `FAIL`, `NOT_RUN`, or `EXTERNAL_VALIDATION_REQUIRED`) and durable evidence reference: commit plus CI run/report, or Qualified_Stakeholder evidence reference;
+7. policy/configuration impact, including Admin Panel surface and configuration-table names where policy values are involved, or an explicit `none`;
+8. gate impact, including confirmation that no closed gate was treated as open; and
+9. `Supersedes`, using a prior evidence ID or `none`.
 
-### 2.3 Change-control rules
+Use `**Validates: Requirements X.Y**` in property-based tests. Property tests must also identify feature name, design property number and statement, run at least 100 generated iterations unless an approved cost rationale is recorded, shrink failures, and retain minimized counterexamples as regression fixtures. A task checkbox, generated test definition, feature flag, or entitlement is not passing test evidence or policy approval.
+
+### 2.3 Evidence-to-status transition rules
+
+- `SPECIFIED` may advance to `IMPLEMENTED_UNVERIFIED` only when current concrete production symbols and a durable implementation commit are recorded.
+- `IMPLEMENTED_UNVERIFIED` may advance to `VERIFIED` only when every required current verification class has a `PASS` record tied to the implemented version and no later failing, invalidating, or superseding record is unresolved.
+- `NOT_RUN`, a test definition without execution, a task status, or a governance draft cannot produce `VERIFIED`.
+- A failing or invalidated result appends a new record and moves the affected row back to `IMPLEMENTED_UNVERIFIED` (or `SPECIFIED` if no application implementation exists) until later passing evidence supersedes it.
+- `BLOCKED_BY_GATE` and `EXTERNAL_VALIDATION_REQUIRED` remain explicit even when development tests pass; automated evidence cannot open a governance or production gate.
+
+### 2.4 Change-control rules
 
 - Update the matrix in the same commit as the code/tests that change coverage.
 - Never mark `VERIFIED` from task state alone; record executable evidence.
@@ -59,8 +70,8 @@ Design references use the numbered headings in [design.md](design.md). Task refe
 
 | Requirement and acceptance criteria | Controlling design | Implementation tasks | Verification tasks / properties | Current evidence and status |
 |---|---|---|---|---|
-| [R1 Tenant Isolation and Authorization Boundary](requirements.md#requirement-1-tenant-isolation-and-authorization-boundary), AC 1.1–1.10 | §§4.4, 5.3, 7.3, 20.1–20.2; Property 1 | 2.1–2.4, 3.2, 25.7 | 3.5, 29.1 (P1/P21), 30.5 | `SPECIFIED`; planned, no code/test evidence. |
-| [R2 Platform and Tenant Administration Separation](requirements.md#requirement-2-platform-and-tenant-administration-separation), AC 2.1–2.9 | §§4.2–4.5, 5.1, 15.2, 20.2; Properties 19/21/27 | 3.2, 4.1, 6.1, 23.3 | 3.5, 29.1, 29.7, 30.5 | `DRAFT_GOVERNANCE`: access baseline §§2, 4–6, 12–14; application evidence planned. |
+| [R1 Tenant Isolation and Authorization Boundary](requirements.md#requirement-1-tenant-isolation-and-authorization-boundary), AC 1.1–1.10 | §§4.4, 5.3, 7.3, 20.1–20.2; Property 1 | 2.1–2.4, 3.2 | 3.5, 25.7, 29.1 (P1/P21), 30.5 | `SPECIFIED`; planned, no code/test evidence. |
+| [R2 Platform and Tenant Administration Separation](requirements.md#requirement-2-platform-and-tenant-administration-separation), AC 2.1–2.9 | §§4.2–4.5, 5.1, 15.2, 20.2; Properties 19/21/27 | 3.2, 4.1, 4.4, 6.1, 23.3 | 3.5, 29.1, 29.7, 30.5 | `DRAFT_GOVERNANCE`: access baseline §§2, 4–6, 12–14; application evidence planned. |
 | [R3 Tenant Lifecycle and Provisioning](requirements.md#requirement-3-tenant-lifecycle-and-provisioning), AC 3.1–3.11 | §§5.2, 7.2, 9.5, 21, 23 Property 26 | 4.2–4.4 | 4.5, 29.7 (P26/P27), 30.5, 30.10 | `SPECIFIED`; commercial policy remains blocked by register `DEP-04`. |
 | [R4 Tenant-Approved Support and Break-Glass Access](requirements.md#requirement-4-tenant-approved-support-and-break-glass-access), AC 4.1–4.13 | §§4.3–4.5, 5.1, 9.5, 20.2–20.4; Properties 19/20 | 5.1–5.4 | 5.5, 29.1 (P19/P20), 30.5 | `DRAFT_GOVERNANCE`: access baseline §§2.2, 4.2, 7–12; rollout remains closed. |
 | [R5 Organization, Site, Account, Worker, and Assignment Administration](requirements.md#requirement-5-organization-site-account-worker-and-assignment-administration), AC 5.1–5.12 | §§4.1, 6, 7.2–7.3, 10, 13.1 | 6.2–6.4 | 6.5 | `SPECIFIED`; planned, no code/test evidence. |
@@ -95,7 +106,7 @@ Design references use the numbered headings in [design.md](design.md). Task refe
 | Requirement and acceptance criteria | Controlling design | Implementation tasks | Verification tasks / properties | Current evidence and status |
 |---|---|---|---|---|
 | [R21 Effective-Dated Compensation and Pay Rules](requirements.md#requirement-21-effective-dated-compensation-and-pay-rules), AC 21.1–21.14 | §§7.2, 8.4, 10, 13.1, 14; Properties 10/18 | 16.1–16.5 | 16.6, 17.7, 29.5 (P10/P18) | `SPECIFIED`; formulas/values must be versioned configuration, not hardcoded. |
-| [R22 Configurable and Validated Payroll Policy](requirements.md#requirement-22-configurable-and-validated-payroll-policy), AC 22.1–22.9 | §§1.2–1.3, 14, 22, 26, 28–29 | 16.3–16.5, 17.3 | 16.6, 17.7, 30.7, 30.9 | `EXTERNAL_VALIDATION_REQUIRED`; register `XG-01`; `G-PAYROLL-PRODUCTION` closed. |
+| [R22 Configurable and Validated Payroll Policy](requirements.md#requirement-22-configurable-and-validated-payroll-policy), AC 22.1–22.9 | §§1.2–1.3, 14, 22, 26, 28–29 | 1.1–1.2, 16.3–16.5, 17.3 | 16.6, 17.7, 30.7, 30.9 | `EXTERNAL_VALIDATION_REQUIRED`; register `XG-01`; `G-PAYROLL-PRODUCTION` closed. |
 | [R23 Estimated Payroll Calculation and Provenance](requirements.md#requirement-23-estimated-payroll-calculation-and-provenance), AC 23.1–23.15 | §§7.2, 8.4, 9.5, 13–14; Properties 11/12/18 | 17.1–17.6 | 17.7, 29.5 (P11/P12/P18), 30.1 | `SPECIFIED`; planned, no code/test evidence. |
 | [R24 Daily and Monthly HR Review](requirements.md#requirement-24-daily-and-monthly-hr-review), AC 24.1–24.11 | §§8.4, 9.5, 13, 15.6; Property 13 | 18.1–18.5 | 18.6, 29.5 (P13), 30.3 | `SPECIFIED`; planned, no code/test evidence. |
 | [R25 Payroll Readiness and Finalization](requirements.md#requirement-25-payroll-readiness-and-finalization), AC 25.1–25.15 | §§8.4, 9.5, 13.3, 14.3, 19; Properties 14/15/16 | 19.1–19.6 | 19.7, 29.6 (P14/P15/P16), 30.1, 30.6 | `BLOCKED_BY_GATE` for production; development contracts planned; both rollout/payroll gates remain closed. |
@@ -106,12 +117,12 @@ Design references use the numbered headings in [design.md](design.md). Task refe
 
 | Requirement and acceptance criteria | Controlling design | Implementation tasks | Verification tasks / properties | Current evidence and status |
 |---|---|---|---|---|
-| [R28 Worker and Supervisor Browser-Capable Installable PWAs](requirements.md#requirement-28-worker-and-supervisor-browser-capable-installable-pwas), AC 28.1–28.13 | §§4.2, 5.1, 7, 8.5, 15.7–15.9, 17; Properties 21/24 | 21.1–21.5 | 21.6, 29.7 (P24), 30.4 | `SPECIFIED`; distribution/support matrix gates remain closed. |
-| [R29 Pending Offline Actions and Reconciliation](requirements.md#requirement-29-pending-offline-actions-and-reconciliation), AC 29.1–29.15 | §§7.2, 8.5, 15.8, 17; Property 22 | 22.1–22.4 | 22.7, 29.7 (P22), 29.9, 30.4 | `SPECIFIED`; offline policy values must be versioned configuration/Admin Panel driven. |
+| [R28 Worker and Supervisor Browser-Capable Installable PWAs](requirements.md#requirement-28-worker-and-supervisor-browser-capable-installable-pwas), AC 28.1–28.13 | §§4.2, 5.1, 7, 8.5, 15.7–15.9, 17; Properties 21/24 | 1.1, 21.1–21.5 | 21.6, 29.7 (P24), 30.4 | `SPECIFIED`; distribution/support matrix gates remain closed. |
+| [R29 Pending Offline Actions and Reconciliation](requirements.md#requirement-29-pending-offline-actions-and-reconciliation), AC 29.1–29.15 | §§7.2, 8.5, 15.8, 17; Property 22 | 1.1, 22.1–22.4 | 22.7, 29.7 (P22), 29.9, 30.4 | `SPECIFIED`; offline policy values must be versioned configuration/Admin Panel driven. |
 | [R30 Progressive Capability Fallback](requirements.md#requirement-30-progressive-capability-fallback), AC 30.1–30.11 | §§15.8, 17, 19; Property 25 | 22.5, 24.2 | 22.7, 29.7 (P25), 30.4 | `SPECIFIED`; planned, no code/test evidence. |
 | [R31 Sensitive Client Data and Session Clearing](requirements.md#requirement-31-sensitive-client-data-and-session-clearing), AC 31.1–31.10 | §§7.2–7.3, 15.8, 17, 20; Property 23 | 20.2, 22.2, 22.6, 24.5 | 20.6, 22.7, 29.7 (P23), 30.4 | `SPECIFIED`; planned, no code/test evidence. |
 | [R32 Responsive Product Experience and State Communication](requirements.md#requirement-32-responsive-product-experience-and-state-communication), AC 32.1–32.14 | §§15.1–15.4, 15.9, 24.6 | 15.2–15.5, 23.1–23.4 | 15.6, 23.6, 30.1 | `SPECIFIED`; planned, no code/test evidence. |
-| [R33 Accessibility and Localization Readiness](requirements.md#requirement-33-accessibility-and-localization-readiness), AC 33.1–33.13 | §§15.1–15.4, 24.6, 28 | 15.5, 23.4–23.5, 28.5 | 15.6, 23.6, 30.8–30.9 | `BLOCKED_BY_GATE` for rollout target/matrix; readiness implementation planned. |
+| [R33 Accessibility and Localization Readiness](requirements.md#requirement-33-accessibility-and-localization-readiness), AC 33.1–33.13 | §§15.1–15.4, 24.6, 28 | 1.1, 15.5, 23.4–23.5, 28.5 | 15.6, 23.6, 30.8–30.9 | `BLOCKED_BY_GATE` for rollout target/matrix; readiness implementation planned. |
 | [R34 Notifications and Action Deadlines](requirements.md#requirement-34-notifications-and-action-deadlines), AC 34.1–34.14 | §§12, 16, 21, 24 | 24.1–24.5 | 24.6, 30.4 | `SPECIFIED`; channel/timing/template values must be versioned configuration/Admin Panel driven. |
 
 ### 3.6 Security, audit, operations, export, retention, migration, and quality gates
@@ -120,11 +131,11 @@ Design references use the numbered headings in [design.md](design.md). Task refe
 |---|---|---|---|---|
 | [R35 Security and Privacy Controls](requirements.md#requirement-35-security-and-privacy-controls), AC 35.1–35.14 | §§4.5, 7.3, 15.8, 18, 20, 24.5 | 25.1–25.3 | 25.7, 28.5, 30.9 | `DRAFT_GOVERNANCE` for access controls only; no security/privacy approval claimed. |
 | [R36 Auditability and Integrity](requirements.md#requirement-36-auditability-and-integrity), AC 36.1–36.12 | §§4.3–4.4, 13, 20.4, 22.2, 24.5 | 25.4–25.6 | 25.7, 27.7, 30.5–30.6 | `SPECIFIED`; draft baseline defines proposed audit fields; implementation planned. |
-| [R37 Observability, Reliability, and Recovery](requirements.md#requirement-37-observability-reliability-and-recovery), AC 37.1–37.11 | §§5, 12, 21, 24.4, 24.7 | 26.1–26.5 | 26.6, 28.6, 30.8–30.9 | `BLOCKED_BY_GATE` for numeric targets/providers; neutral contracts specified. |
+| [R37 Observability, Reliability, and Recovery](requirements.md#requirement-37-observability-reliability-and-recovery), AC 37.1–37.11 | §§5, 12, 21, 24.4, 24.7 | 1.1, 26.1–26.5, 28.1 | 26.6, 28.6, 30.8–30.9 | `BLOCKED_BY_GATE` for numeric targets/providers; neutral contracts specified. |
 | [R38 Performance and Scalability Gates](requirements.md#requirement-38-performance-and-scalability-gates), AC 38.1–38.10 | §§21, 24.7, 27, 28 | 28.1–28.4 | 28.6, 30.8 | `BLOCKED_BY_GATE` for numeric budgets; workload dimensions specified. |
 | [R39 Export and Integration Extension Points](requirements.md#requirement-39-export-and-integration-extension-points), AC 39.1–39.14 | §§10–12, 20, 22, 24 | 27.1–27.2 | 27.7 | `BLOCKED_BY_GATE` for contracts/vendors; neutral export/integration contracts specified. |
 | [R40 Retention, Data Lifecycle, and Privacy Rights](requirements.md#requirement-40-retention-data-lifecycle-and-privacy-rights), AC 40.1–40.8 | §§20.3, 22.1, 24 | 25.3, 27.3 | 27.7, 30.9 | `BLOCKED_BY_GATE` for durations/residency/legal constraints; no approval claimed. |
-| [R41 Historical Paper Migration and Reconciliation](requirements.md#requirement-41-historical-paper-migration-and-reconciliation), AC 41.1–41.9 | §§2, 22, 25, 24 | 27.4–27.6 | 27.7, 30.7 | `EXTERNAL_VALIDATION_REQUIRED` for go-live reconciliation; no digital event fabrication permitted. |
+| [R41 Historical Paper Migration and Reconciliation](requirements.md#requirement-41-historical-paper-migration-and-reconciliation), AC 41.1–41.9 | §§2, 22, 24–25 | 27.4–27.6 | 27.7, 30.7 | `EXTERNAL_VALIDATION_REQUIRED` for go-live reconciliation; no digital event fabrication permitted. |
 | [R42 Implementation and Rollout Decision Gates](requirements.md#requirement-42-implementation-and-rollout-decision-gates), AC 42.1–42.11 | §§1.1, 26–28 | 1.1–1.4; gate-dependent tasks 28.1–28.5 | 28.6, 30.7–30.10 | `DRAFT_GOVERNANCE`: decision register, access baseline, and this matrix exist; all named gates retain recorded state. |
 | [R43 Correctness and Testability](requirements.md#requirement-43-correctness-and-testability), AC 43.1–43.14 | §§23–24 | Test-bearing subtasks throughout 3–28; 29.1–29.9 | 29.1–29.9, 30.1–30.10 | `SPECIFIED`; test taxonomy/property metadata/iteration/update rules controlled here; no test execution claimed. |
 
@@ -146,14 +157,14 @@ All 27 named design properties have planned implementation in Task 29; this tabl
 
 ## 5. Code → Tests evidence register
 
-This register contains actual evidence only. Future tasks append records; they do not replace historical entries. “Not applicable” below is a reasoned value, not a placeholder: Task 1.4 creates specification governance and no application code.
+This register contains actual evidence only. Records are append-only after the Task 1.4 commit; a later correction or rerun appends a record and references the earlier ID in `Supersedes`. Governance evidence is explicitly distinguished from application code and executable test evidence.
 
-| Evidence ID | Acceptance criteria | Task | Production/code evidence | Test/validation evidence | Result | Policy/config and gate effect |
-|---|---|---|---|---|---|---|
-| `TR-001` | R42.11 | 1.4 | `traceability-matrix.md`, complete R1–R43 matrix and update contract | Structural validation checks all 43 requirement rows, 27 properties, task references, relative links, closed-gate text, and draft markings | Passed at Task 1.4 completion | No policy activated; `G-TENANT-ROLLOUT` and `G-PAYROLL-PRODUCTION` remain closed. |
-| `TR-002` | R43.1–R43.14 | 1.4 | `traceability-matrix.md` §§2, 4–5 | Manual cross-review against requirements §43, design §§23–24, and tasks 29.1–29.9 | Passed at Task 1.4 completion | No testing library selected and no test run claimed; `TECH-03` remains a blocking prerequisite. |
-| `TR-003` | R2.5–2.9, R4.1–4.13, R6.1–6.11, R35.1–35.2, R42.3 | 1.3 carried baseline | `access-governance-baseline.md` and register `XG-02`; no application code | Baseline conformance cases `AG-001`–`AG-043` are specified, not executed | `DRAFT_GOVERNANCE`, not verified implementation | Every value is configuration-table/Admin Panel driven; explicit approval required; rollout gate closed. |
-| `TR-004` | R22.1–22.9 | 1.2 disposition | Register `XG-01`; no application code or policy approval | Qualified manual validation not yet performed | `EXTERNAL_VALIDATION_REQUIRED` | No Singapore MOM/legal/payroll/privacy/contract/compliance approval claimed; payroll production gate closed. |
+| Evidence ID | Acceptance criteria | Implementing task | Verification task | Production/code evidence | Test/validation identifier and class | Result and durable evidence | Policy/config and gate effect | Supersedes |
+|---|---|---|---|---|---|---|---|---|
+| `TR-001` | R42.11 | 1.4 | 1.4 structural self-review | `.kiro/specs/workforce-payroll-management-saas/traceability-matrix.md` §§2–6; governance artifact, **no application code** | `TRACE-STRUCT-001`; structural review of 43 requirement rows, 27 properties, task references, relative links, closed-gate text, and draft markings | `PASS`; Task 1.4 commit containing this record and completion report | No policy activated; `G-IMPLEMENTATION`, `G-TENANT-ROLLOUT`, `G-PAYROLL-PRODUCTION`, `G-PRODUCTION-OPERATIONS`, and `G-RELEASE` retain their recorded closed states. | none |
+| `TR-002` | R43.1–R43.14 | 1.4 | 1.4 requirements/design/task cross-review | `.kiro/specs/workforce-payroll-management-saas/traceability-matrix.md` §§2, 4–5; governance artifact, **no application code** | `TRACE-QUALITY-001`; structural review against `requirements.md` R43, `design.md` §§23–24, and `tasks.md` 29.1–29.9 | `PASS`; Task 1.4 commit containing this record and completion report | No testing library selected and no executable test run claimed; `TECH-03` and `G-IMPLEMENTATION` remain blocking/closed as recorded. | none |
+| `TR-003` | R2.5–R2.9, R4.1–R4.13, R6.1–R6.11, R35.1–R35.2, R42.3 | 1.3 | Planned 3.5, 5.5, 29.1, and 29.6 | `.kiro/specs/workforce-payroll-management-saas/access-governance-baseline.md` and register `XG-02`; governance artifact, **no application code** | `AG-001`–`AG-043`; specified example/security/conformance cases | `NOT_RUN`; draft baseline commits `b87cab5` and `c40a105` | Every value is configuration-table/Admin Panel driven; explicit exact-digest approval required; `G-TENANT-ROLLOUT` remains closed. | none |
+| `TR-004` | R22.1–R22.9 | 1.2 | Planned qualified validation in 30.7 and 30.9 | `.kiro/specs/workforce-payroll-management-saas/implementation-decision-register.md` `XG-01`; disposition only, **no application code or policy approval** | `PAYROLL-QUALIFIED-VALIDATION-001`; qualified manual validation | `EXTERNAL_VALIDATION_REQUIRED`; disposition commit `0bb1a1d`; validation evidence does not yet exist | No Singapore MOM/legal/payroll/privacy/contract/compliance approval claimed; `G-PAYROLL-PRODUCTION` remains closed. | none |
 
 ## 6. Coverage and self-review record
 
@@ -166,4 +177,4 @@ Task 1.4 completion requires all of the following to remain true:
 - No application implementation was started, and Task 2.1 has no Task 1.4 evidence record.
 - No unverified statutory, contractual, payroll, legal, privacy, or compliance value or approval was introduced.
 - Every policy-bearing row requires versioned configuration tables and applicable Admin Panel management; no hardcoded policy default is authorized.
-- `G-TENANT-ROLLOUT` and `G-PAYROLL-PRODUCTION` remain closed.
+- `G-IMPLEMENTATION`, `G-TENANT-ROLLOUT`, `G-PAYROLL-PRODUCTION`, `G-PRODUCTION-OPERATIONS`, and `G-RELEASE` retain the closed states recorded in the implementation decision register.
