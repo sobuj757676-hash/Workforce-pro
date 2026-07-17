@@ -9,7 +9,7 @@
 | Field | Value |
 |---|---|
 | Policy identifier | `ACCESS-GOVERNANCE-BASELINE` |
-| Version | `1.0.0-draft` |
+| Version | `1.0.1-draft` |
 | Status | **DRAFT – NOT APPROVED – NOT FOR PRODUCTION** |
 | Task | 1.3 |
 | Controlling gates | `XG-02` and `G-TENANT-ROLLOUT` remain closed |
@@ -138,6 +138,9 @@ Permission identifiers are stable, case-sensitive, and deny-by-default. Wildcard
 | `tenant.access.policy.draft` | Draft stricter Tenant access policy | Tenant | R4_CRITICAL | Cannot lower this baseline. |
 | `tenant.access.policy.approve` | Approve exact Tenant policy version | Tenant | R4_CRITICAL | Two distinct checkers; exact digest. |
 | `tenant.access.review.execute` | Review current sensitive grants | Tenant | R3_HIGH | Cannot approve own grant; decision audited. |
+| `tenant.support.request.view` | View pending Support_Grant requests and active Support_Session metadata | Tenant | R2_SENSITIVE | Request metadata only; protected Tenant payload remains separately authorized. |
+| `tenant.support.grant.approve` | Approve or reject an exact Support_Grant request | Tenant | R3_HIGH | Distinct from requesting Platform agent; exact case/purpose/actions/data classes/scope/expiry digest; approver must independently hold authority for every delegated action/data class. |
+| `tenant.support.session.revoke` | Revoke an active Support_Session for the Tenant | Tenant | R3_HIGH | Step-up 1; revocation applies to every subsequent server decision. |
 | `tenant.account.view` | View Account lifecycle and non-secret grants | Tenant | R2_SENSITIVE | Field authorization still applies. |
 | `tenant.account.manage` | Create/update/disable Account | Tenant | R3_HIGH | Role activation is separate. |
 | `tenant.session.revoke` | Revoke Account sessions | Tenant | R3_HIGH | Immediate subsequent denial/purge signal. |
@@ -249,6 +252,8 @@ Templates are immutable, versioned collections of Permission IDs. Assignment is 
 | `TENANT_ACCESS_MAKER` | `tenant.access.role.view`, `tenant.access.role.draft`, `tenant.access.role.submit`, `tenant.access.policy.view`, `tenant.account.view`, `tenant.account.manage`, `tenant.session.revoke`, `tenant.device.revoke` | Tenant or narrower | Role/policy approval, salary, finalization. |
 | `TENANT_ACCESS_CHECKER` | `tenant.access.role.view`, `tenant.access.role.approve`, `tenant.access.review.execute`, `tenant.access.policy.view` | Tenant or narrower | Role drafting/submission and critical approval. |
 | `TENANT_ACCESS_CRITICAL_CHECKER` | `tenant.access.role.view`, `tenant.access.role.approve_critical`, `tenant.access.policy.view`, `tenant.access.policy.approve`, `tenant.access.review.execute` | Tenant | Role/policy drafting/submission; salary/finalization. |
+| `TENANT_SUPPORT_APPROVER` | `tenant.support.request.view`, `tenant.support.grant.approve` | Tenant or narrower grant scope | Support use, salary, protected data, and payroll authority; an approver needs separate authority for every delegated action/data class. |
+| `TENANT_SUPPORT_SECURITY_REVOKER` | `tenant.support.request.view`, `tenant.support.session.revoke` | Tenant | Support grant approval/use, salary, protected data, payroll, and access-policy mutation. |
 | `TENANT_WORKFORCE_ADMIN` | `tenant.organization.view`, `tenant.organization.manage`, `tenant.checkpoint.manage`, `tenant.worker.view`, `tenant.worker.manage`, `tenant.assignment.view`, `tenant.assignment.manage` | Tenant or narrower | Protected-ID view, salary, assignment approval. |
 | `TENANT_PROTECTED_ID_READER` | `tenant.worker.view`, `tenant.worker.protected_id.view` | Worker/Organization_Unit | Worker mutation, salary. |
 | `TENANT_ASSIGNMENT_CHECKER` | `tenant.assignment.view`, `tenant.assignment.approve` | Tenant or narrower | Assignment management, salary. |
@@ -301,6 +306,7 @@ No default Role grants `tenant.payslip.view`, `platform.support.payroll_mutation
 18. Revocation, Account disablement, session/device revocation, scope expiry, or Tenant lifecycle denial applies to the next server decision; cached authorization is not authoritative.
 19. Sensitive grants are reviewable at least every 90 days in this proposed baseline and immediately after manager/assignment change, security incident, or extended leave. `R4_CRITICAL` grants are reviewable every 30 days. Review does not renew an expired grant.
 20. Role assignment duration defaults to no more than 365 days for `R3_HIGH` and 90 days for `R4_CRITICAL`; shorter assignment or Tenant policy wins. Renewal is a new exact-digest approval decision.
+21. `tenant.support.grant.approve` and `tenant.support.session.revoke` remain separate from every support-use, salary, protected-data, payroll, export, and access-administration Permission. Support_Grant approval is limited to actions and data classes the approver is independently authorized to delegate within the same Resource_Scope.
 
 ## 7. Segregation_of_Duties rules
 
@@ -326,7 +332,7 @@ Distinctness is evaluated by authenticated human identity, not Account, session,
 | `SOD-10-REVIEW` | Create/change a payroll source used by a ledger entry | Review that entry at resulting Input_Digest | Source maker cannot be sole reviewer; independent reviewer required. |
 | `SOD-11-FINALIZE` | Submit finalization/readiness digest or make included compensation/Adjustment in current cycle | Finalize snapshot | Finalizer must differ from submitter and cannot finalize a result containing the finalizer's unindependently approved source change. |
 | `SOD-12-EXPORT` | Request sensitive payroll/Payslip/evidence/audit export | Approve export manifest | Same actor denied; approval bound to exact query, fields, recipients, classification, expiry, and digest. |
-| `SOD-13-SUPPORT` | Platform agent requests Support_Grant | Tenant approver grants access | Boundaries and humans distinct; agent cannot approve Tenant grant. |
+| `SOD-13-SUPPORT` | Platform agent requests Support_Grant | Tenant approver holding `tenant.support.grant.approve` grants access | Boundaries and humans distinct; agent cannot approve Tenant grant; approver must independently hold authority for every delegated action/data class and containing scope. |
 | `SOD-14-BREAK_GLASS` | Request/use Break_Glass_Session | Security approval, incident approval, post-use review | Requester/user, two approvers, and reviewer separated as Section 10 states. |
 | `SOD-15-AUDIT` | Perform sensitive action | Alter/delete its Audit_Event | Audit alteration/deletion Permission does not exist. |
 
@@ -360,7 +366,7 @@ Every approval is a first-class immutable record containing Tenant/boundary, pol
 | Payroll finalization | R4_CRITICAL | 1 distinct finalizer/checker | `tenant.payroll.finalize` | Submitted/readiness/current Input_Digests equal; all included current reviews; Step-up 2; lock acquired. |
 | Payroll/Payslip export | R3_HIGH/R4_CRITICAL | 1 | Separate authorized checker with equivalent export Permission and containing scope | Exact manifest/query/fields/recipient/expiry digest. |
 | Evidence/audit export | R4_CRITICAL | 1 | Separate authorized checker with same export class and containing scope | Exact manifest/query/fields/recipient/expiry digest. |
-| Support_Grant | R3_HIGH/R4_CRITICAL by data class | 1 Tenant approver | Tenant approver authorized for every requested action/data class | Exact case/purpose/scope/actions/data classes/expiry digest. |
+| Support_Grant | R3_HIGH/R4_CRITICAL by data class | 1 Tenant approver | `tenant.support.grant.approve` plus independent authority for every requested action/data class within containing scope | Exact case/purpose/scope/actions/data classes/expiry digest. |
 | Break_Glass_Session | R4_CRITICAL | 2 | Security approver and incident approver | Section 10 conditions and same request digest. |
 
 Rejection requires a controlled reason and returns the resource to the policy-defined draft/rejected state without mutating approved content. Approval never authorizes beyond the checker's current Resource_Scope and never survives checker/Role/scope revocation for an action not yet activated.
@@ -369,9 +375,9 @@ Rejection requires a controlled reason and returns the resource to the policy-de
 
 > **DRAFT – NOT APPROVED – NOT FOR PRODUCTION**
 
-`STEP_UP_1` is mandatory for: high-risk Role assignment approval/revocation; access review decision; full protected-identifier view; high-sensitivity evidence view; salary/ledger view; Payroll/Payslip export request or approval at R3; support session request/start/use; own Payslip view; release change; and platform audit export.
+`STEP_UP_1` is mandatory for: high-risk Role assignment approval/revocation; access review decision; full protected-identifier view; high-sensitivity evidence view; salary/ledger view; Payroll/Payslip export request or approval at R3; Tenant Support_Grant approval or support-session revocation at R3; support session request/start/use; own Payslip view; release change; and platform audit export.
 
-`STEP_UP_2` is mandatory for: any R4 Role/policy assignment approval or activation; salary approval; Adjustment approval; Pay_Rule approval; payroll finalization submission and finalization; another Worker's Payslip view; Payslip/evidence/audit export; Integration_Principal creation/rotation; Tenant suspension/termination transition; platform security-default activation; calendar blocking-impact override; all Break_Glass request/approval/start actions; and support access to protected ID, sensitive evidence, salary, Payslip, or payroll mutation.
+`STEP_UP_2` is mandatory for: any R4 Role/policy assignment approval or activation; salary approval; Adjustment approval; Pay_Rule approval; payroll finalization submission and finalization; another Worker's Payslip view; Payslip/evidence/audit export; Integration_Principal creation/rotation; Tenant suspension/termination transition; platform security-default activation; calendar blocking-impact override; Tenant approval of a Support_Grant containing an R4 action or data class; all Break_Glass request/approval/start actions; and support access to protected ID, sensitive evidence, salary, Payslip, or payroll mutation.
 
 Where an action appears at both levels, `STEP_UP_2` wins. Viewing a button, holding a Role, or having completed a prior unrelated step-up never satisfies action-bound step-up.
 
@@ -440,7 +446,7 @@ Audit records for this policy include actor boundary, Tenant, Principal, action,
 
 > **DRAFT – NOT APPROVED – NOT FOR PRODUCTION**
 
-Every value in Sections 3–11 is configuration data. Implementations MUST NOT hardcode Permission grants, Role contents, risk mappings, approval counts, SoD pairs, step-up freshness, support limits, Break_Glass duration, review intervals, assignment lifetimes, or prohibited-action lists in application code. The values in this document are proposed seed rows for `ACCESS-GOVERNANCE-BASELINE` version `1.0.0-draft`; the authorization engine resolves the current approved version from authoritative configuration tables.
+Every value in Sections 3–11 is configuration data. Implementations MUST NOT hardcode Permission grants, Role contents, risk mappings, approval counts, SoD pairs, step-up freshness, support limits, Break_Glass duration, review intervals, assignment lifetimes, or prohibited-action lists in application code. The values in this document are proposed seed rows for `ACCESS-GOVERNANCE-BASELINE` version `1.0.1-draft`; the authorization engine resolves the current approved version from authoritative configuration tables.
 
 ### 12.1 Configuration tables
 
@@ -535,6 +541,8 @@ These are normative tests for the future implementation. `PASS` means the observ
 | `AG-039` | Two applicable policy versions overlap ambiguously or cache holds a superseded version. | Authorization fails closed or reloads the single current version before decision; no stale allow. | R6.8–6.9; Design §§4.4, 13 |
 | `AG-040` | Admin Panel hides/shows a policy control without corresponding server Permission. | Server decision is unchanged; unauthorized command denied. | R2.7–2.9, R35.1; Design §§4.2, 4.4 |
 | `AG-041` | A policy value is absent from configuration and application code supplies a built-in fallback. | Conformance fails; authorization must fail closed rather than use hardcoded policy. | R6.8–6.9, R35.1; Design §§4.4, 7.3 |
+| `AG-042` | A Tenant Principal has salary or protected-data view authority but lacks `tenant.support.grant.approve`, or has support approval without independent authority for a requested action/data class. | Support_Grant approval is denied; no Support_Session authority is created. | R4.2, R4.5, R4.9, R35.1; Design §§4.3–4.5 |
+| `AG-043` | An authorized Tenant security Principal revokes an active Support_Session with `tenant.support.session.revoke`. | Revocation is recorded and every subsequent session use is denied immediately. | R4.8, R6.9, R35.1; Design §§4.3–4.4 |
 
 ### 13.1 Structural validation assertions
 
@@ -545,6 +553,7 @@ A conforming policy artifact and implementation MUST prove:
 - no default Role includes a prohibited maker/checker pair;
 - every R3_HIGH/R4_CRITICAL Permission is covered by the step-up and/or explicit exception rules in this document;
 - the six salary/support boundaries (`tenant.salary.view`, `tenant.salary.edit`, `tenant.salary.approve`, `tenant.payroll.finalize`, sensitive export Permissions, and support-use Permissions) remain distinct;
+- Tenant support approval and revocation use explicit `tenant.support.grant.approve` and `tenant.support.session.revoke` Permissions; neither Permission implies support use, salary, protected-data, payroll, export, or access-administration authority;
 - every governed action records exact digest and policy version;
 - Break_Glass duration, approver count, prohibited actions, expiry, alerting, and review are determinate;
 - every policy value is represented in a versioned configuration table and manageable through the applicable Admin Panel workflow;
@@ -559,9 +568,9 @@ A conforming policy artifact and implementation MUST prove:
 | 2.5 | §§4.1, 4.5 | §§4.5, 5.3, 6 | AG-001, AG-030 |
 | 2.6 | §§4.1–4.2, 4.5 | §§4.5, 5.3 | AG-002, AG-014, AG-030 |
 | 2.7 | §§4.2, 4.4 | §§2, 5.1 | AG-004, AG-016 |
-| 4.1–4.3 | §4.3 | §§2.2, 4.2, 8.2 | AG-003, AG-017 |
-| 4.4–4.6 | §§4.3, 20.4 | §§2.2, 10.3, 11 | AG-018, AG-024 |
-| 4.7–4.9 | §§4.3–4.5 | §§2.2, 4.2, 10.2–10.3 | AG-017–AG-020, AG-026 |
+| 4.1–4.3 | §4.3 | §§2.2, 4.2–4.3, 5.3, 8.2 | AG-003, AG-017, AG-042 |
+| 4.4–4.6 | §§4.3, 20.4 | §§2.2, 4.2–4.3, 5.3, 10.3, 11 | AG-018, AG-024, AG-042 |
+| 4.7–4.9 | §§4.3–4.5 | §§2.2, 4.2–4.3, 5.3, 10.2–10.3 | AG-017–AG-020, AG-026, AG-042–AG-043 |
 | 4.10–4.12 | §§4.3, 20.1, 20.4 | §10 | AG-023–AG-027 |
 | 4.13 | §§4.3, 13.3 | §§6, 10.2 | AG-020, AG-025 |
 | 6.1–6.2 | §§4.4, 7.2–7.3 | §§4–6 | AG-005–AG-006, AG-028 |
