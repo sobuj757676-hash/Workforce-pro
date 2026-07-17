@@ -8,6 +8,8 @@ This task plan implements the approved design and the derived requirements witho
     - Preserve technology-neutral contracts until each choice is approved.
     - _Requirements: 3.10–3.11, 22.4–22.9, 28.12–28.13, 29.15, 33.11–33.13, 37.11, 38.1–38.2, 42.1–42.10_
   - [ ] 1.2 Obtain and record qualified Singapore PTE, MOM, contract, payroll, legal, privacy, and compliance validation for production payroll policy.
+    - **Disposition:** External Dependency; Manual Compliance Validation Before Production; Not Required For Development.
+    - This disposition does not complete compliance validation; `G-PAYROLL-PRODUCTION` remains closed until current, Tenant-scoped Qualified_Stakeholder validation evidence is recorded.
     - Do not encode unverified statutory rates, thresholds, eligibility, standard days/hours, rounding, or legal interpretations.
     - _Requirements: 22.1–22.9_
   - [ ] 1.3 Define the approved Permission catalog, default Role templates, custom-role constraints, risk tiers, Maker_Checker_Policy, Segregation_of_Duties rules, step-up actions, and Break_Glass_Session governance.
