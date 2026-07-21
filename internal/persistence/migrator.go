@@ -12,7 +12,16 @@ import (
 	"github.com/workforce-pro/workforce-payroll/migrations"
 )
 
-const principalBindingsVersion int64 = 1
+type migrationEntry struct {
+	version int64
+	sql     string
+	downSQL string
+}
+
+var allMigrations = []migrationEntry{
+	{version: 1, sql: migrations.PrincipalBindingsUp, downSQL: migrations.PrincipalBindingsDown},
+	{version: 2, sql: migrations.IdempotencyRecordsUp, downSQL: migrations.IdempotencyRecordsDown},
+}
 
 type Migrator struct {
 	pool *pgxpool.Pool
@@ -26,14 +35,13 @@ func NewMigrator(pool *pgxpool.Pool) (*Migrator, error) {
 }
 
 func (m *Migrator) Up(ctx context.Context) error {
-	checksum := migrationChecksum(migrations.PrincipalBindingsUp)
 	tx, err := m.pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
-	if _, err := tx.Exec(ctx, "SELECT pg_advisory_xact_lock($1)", principalBindingsVersion); err != nil {
+	if _, err := tx.Exec(ctx, "SELECT pg_advisory_xact_lock($1)", int64(9999)); err != nil {
 		return err
 	}
 	if _, err := tx.Exec(ctx, `
@@ -46,23 +54,25 @@ func (m *Migrator) Up(ctx context.Context) error {
 		return err
 	}
 
-	var existingChecksum string
-	err = tx.QueryRow(ctx, "SELECT checksum FROM schema_migrations WHERE version = $1", principalBindingsVersion).Scan(&existingChecksum)
-	if err == nil {
-		if existingChecksum != checksum {
-			return errors.New("applied migration checksum mismatch")
+	for _, migration := range allMigrations {
+		checksum := migrationChecksum(migration.sql)
+		var existingChecksum string
+		err := tx.QueryRow(ctx, "SELECT checksum FROM schema_migrations WHERE version = $1", migration.version).Scan(&existingChecksum)
+		if err == nil {
+			if existingChecksum != checksum {
+				return fmt.Errorf("applied migration %d checksum mismatch", migration.version)
+			}
+			continue
 		}
-		return tx.Commit(ctx)
-	}
-	if !errors.Is(err, pgx.ErrNoRows) {
-		return err
-	}
-
-	if _, err := tx.Exec(ctx, migrations.PrincipalBindingsUp); err != nil {
-		return fmt.Errorf("apply migration 1: %w", err)
-	}
-	if _, err := tx.Exec(ctx, "INSERT INTO schema_migrations (version, checksum) VALUES ($1, $2)", principalBindingsVersion, checksum); err != nil {
-		return err
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return err
+		}
+		if _, err := tx.Exec(ctx, migration.sql); err != nil {
+			return fmt.Errorf("apply migration %d: %w", migration.version, err)
+		}
+		if _, err := tx.Exec(ctx, "INSERT INTO schema_migrations (version, checksum) VALUES ($1, $2)", migration.version, checksum); err != nil {
+			return err
+		}
 	}
 	return tx.Commit(ctx)
 }
@@ -73,11 +83,8 @@ func (m *Migrator) Down(ctx context.Context) error {
 		return err
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
-	if _, err := tx.Exec(ctx, "SELECT pg_advisory_xact_lock($1)", principalBindingsVersion); err != nil {
+	if _, err := tx.Exec(ctx, "SELECT pg_advisory_xact_lock($1)", int64(9999)); err != nil {
 		return err
-	}
-	if _, err := tx.Exec(ctx, migrations.PrincipalBindingsDown); err != nil {
-		return fmt.Errorf("revert migration 1: %w", err)
 	}
 	if _, err := tx.Exec(ctx, `
 		CREATE TABLE IF NOT EXISTS schema_migrations (
@@ -88,8 +95,16 @@ func (m *Migrator) Down(ctx context.Context) error {
 	`); err != nil {
 		return err
 	}
-	if _, err := tx.Exec(ctx, "DELETE FROM schema_migrations WHERE version = $1", principalBindingsVersion); err != nil {
-		return err
+
+	// Apply down migrations in reverse order.
+	for i := len(allMigrations) - 1; i >= 0; i-- {
+		migration := allMigrations[i]
+		if _, err := tx.Exec(ctx, migration.downSQL); err != nil {
+			return fmt.Errorf("revert migration %d: %w", migration.version, err)
+		}
+		if _, err := tx.Exec(ctx, "DELETE FROM schema_migrations WHERE version = $1", migration.version); err != nil {
+			return err
+		}
 	}
 	return tx.Commit(ctx)
 }
